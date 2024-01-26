@@ -3,17 +3,19 @@
 adds deploy-rs as flake module
 
 ``` nix
-parts.mkFlake {
-  deploy = {
-    nodes.<nixosConfiguration>.hostname = "1.1.1.1";
-    defaultUser = "root";
-    defaultSshUser = "lunarix";
-    defaultSystem = "x86_64-linux"
-    defaultSshOpts = ["-t"];
+
+imports = [ lynx.flakeModules.deploy-rs ];
+
+deploy = {
+  input = inputs.deploy;
+  defaultSshUser = "lunarix";
+  defaultSshOpts = [ "-t" ];
+  nodes = {
+    cypress.hostname = "10.0.0.5";
+    cardinal.hostname = "unallocatedspace.dev";
+    charmander.hostname = "10.0.0.62";
   };
-    
-  flake = { ... }
-}
+};
 ```
 
 

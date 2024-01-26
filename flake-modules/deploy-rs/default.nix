@@ -137,7 +137,7 @@ in
     };
   };
 
-  config = mkIf cfg.enable
+  config =
   {
     flake.deploy = cfg // {
       nodes = (builtins.mapAttrs (k: v:
