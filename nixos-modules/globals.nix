@@ -7,10 +7,10 @@ with lib;
     description = ''
       A set of global variables to be made available to all modules.
     '';
-    example = literalExpression {
-      value = ''
-        globals.var-name = ["value"];
+    example = literalExpression
+      ''
+      globals.var-name = ["value"];
       '';
-    };
+
   };
 }
