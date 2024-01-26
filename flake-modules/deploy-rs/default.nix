@@ -1,4 +1,4 @@
-{ self, config, lib, pkgs, inputs, ... }:
+_: { self, inputs, config, lib, pkgs, ... }:
 ####
 # Flake module for deploy-rs
 ### Example:
