@@ -16,6 +16,7 @@
 
         nixosModules = {
           globals = import ./nixos-modules/globals.nix;
+          yggdrasil = import ./nixos-modules/yggdrasil.nix
         };
       };
     });
