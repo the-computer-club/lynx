@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
     parts.url = "github:hercules-ci/flake-parts";
-    deploy.url = "github:serokell/deploy-rs";
   };
 
   outputs = inputs@{self, parts, ...}:
