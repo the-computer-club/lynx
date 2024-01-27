@@ -1,35 +1,18 @@
 _: { self, inputs, config, lib, pkgs, ... }:
-####
-# Flake module for deploy-rs
-### Example:
-# flake-parts.mkFlake {
-#   deploy.input = inputs.deploy-rs;
-#   deploy.defaultSshUser = "lunarix";
-#   deploy.nodes.vps-host.hostname = "1.1.1.1";
-#   nixosConfiguration.vps-host = nixpkgs.lib.nixosSystem { ... };
-# }
-### deploy
-# nix shell nixpkgs#deploy-rs \
-#  -c "LOCAL_KEY=/var/store/key deploy /etc/nixos#vps-host --impure"
-#
 with lib;
 let
   cfg = config.deploy;
 
-  profile.options =
+  generic-settings.options =
   {
-    path = mkOption {
-      default = null;
-    };
-
     sshOpts = mkOption {
       type = types.listOf types.string;
-      default = config.deploy.defaultSshOpts;
+      default = [];
     };
 
     sshUser = mkOption {
       type = types.string;
-      default = config.deploy.defaultSshUser;
+      default = "root";
     };
 
     user = mkOption {
@@ -78,7 +61,14 @@ let
     };
   };
 
-  nodes.options = {
+  profile.options = generic-settings.options // {
+    path = mkOption {
+      default = {};
+    };
+  };
+
+  nodes.options = generic-settings.options //
+  {
     hostname = mkOption {
       type = types.string;
     };
@@ -86,6 +76,7 @@ let
     system = mkOption {
       type = types.string;
       example = "aarch64-linux";
+      default = "x86_64-linux";
     };
 
     profileOrder = mkOption {
@@ -95,61 +86,21 @@ let
 
     profiles = mkOption {
       type = types.attrsOf (types.submodule profile);
-      default = {
-        system.path = null;
-      };
-    };
-  };
-
-in
-# flake.deploy.defaultSshUser = "storm";
-# flake.deploy.nodes.host.user = "lunarix";
-
-{
-  options.deploy = {
-    input = mkOption {
-      type = types.lazyAttrsOf types.attrs;
-    };
-
-    defaultSystem = mkOption {
-      type = types.string;
-      default = "x86_64-linux";
-    };
-
-    defaultSshOpts = mkOption {
-      type = types.listOf types.string;
-      default = [];
-    };
-
-    defaultSshUser = mkOption {
-      type = types.string;
-      default = "root";
-    };
-
-    defaultUser = mkOption {
-      type = types.string;
-      default = "root";
-    };
-
-    nodes = mkOption {
-      type = types.attrsOf (types.submodule nodes);
       default = {};
     };
   };
+in
+{
+  options = {
+    deploy = {
+      nodes = mkOption {
+        type = types.attrsOf (types.submodule nodes);
+        default = {};
+      };
+    } // generic-settings.options;
+  };
 
-  config =
-  {
-    flake.deploy = cfg // {
-      nodes = (builtins.mapAttrs (k: v:
-        v // {
-          path =
-            if v.profiles.system.path != null then
-              v.profiles.system.path
-            else
-              config.deploy.input.lib.${config.deploy.nodes.${k}.system}.activate.nixos
-                self.nixosConfigurations.${k};
-        }
-      ) cfg.nodes);
-    };
+  config = {
+    flake.deploy = cfg;
   };
 }
