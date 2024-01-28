@@ -121,7 +121,7 @@ let
     };
 
     profilePath = mkOption {
-      type = types.either types.path types.null;
+      type = types.nullOr types.path;
       default = null;
       description = ''
       An optional path to where your profile should be installed to, this is useful if you want to use a common profile name across multiple users, but would have conflicts in your node's profile list.
