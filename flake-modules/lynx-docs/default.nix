@@ -15,6 +15,8 @@ _: { self, inputs, config, lib, pkgs, ... }:
       }:
         let
           eval = lib.evalModules {
+            # maybe scary and wrong.
+            # but emperically, it works.
             modules = map (x: x // { config._module.check = false; }) modules;
           };
 
