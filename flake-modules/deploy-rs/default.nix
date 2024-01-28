@@ -6,13 +6,13 @@ let
   generic-settings.options =
   {
     sshOpts = mkOption {
-      type = types.listOf types.string;
+      type = types.listOf types.str;
       default = [];
       description = '' This is an optional list of arguments that will be passed to SSH. '';
     };
 
     sshUser = mkOption {
-      type = types.string;
+      type = types.str;
       default = "root";
       description = ''
         This is the user that the profile will be deployed to (will use sudo if not the same as above).
@@ -21,7 +21,7 @@ let
     };
 
     user = mkOption {
-      type = types.string;
+      type = types.str;
       default = "root";
       description = ''
         This is the user that deploy-rs will use when connecting.
@@ -30,7 +30,7 @@ let
     };
 
     sudo = mkOption {
-      type = types.string;
+      type = types.str;
       default = "sudo -u";
       description = ''
         Which sudo command to use. Must accept at least two arguments:
@@ -141,7 +141,7 @@ let
     };
 
     profileOrder = mkOption {
-      type = types.listOf types.string;
+      type = types.listOf types.str;
       default = [];
       description = ''
         An optional list containing the order you want profiles to be deployed.
