@@ -1,5 +1,4 @@
 _: { self, inputs, config, lib, pkgs, ... }:
-
 {
   config.perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
     let generate = pkgs.callPackage ({
@@ -29,7 +28,6 @@ _: { self, inputs, config, lib, pkgs, ... }:
             buildInputs = [ gnused coreutils ];
           }
           ''
-
             cat ${docs.optionsCommonMark} \
               ${if htmlSafe then
                 ''| sed -e "s|\\\<|\&lt\;|g"'' else "" } \
@@ -38,37 +36,24 @@ _: { self, inputs, config, lib, pkgs, ... }:
                 else ""} \
               > $out
           ''
-
-          #  ${
-          #     if htmlSafe then ''| sed -e "s|\\\<|\&lt\;|g"'' else ""
-          #   } ${if
-          #     uri != null then
-          #       ''| sed -e "s|/nix/store/.*/|${uri}|g"''
-          #     else ""
-          #     } >> $out
-          # ''
       );
     in
     {
       packages.flakeDocsMD = generate {
         name = "flake-options.md";
         htmlSafe = true;
-        #uri = null;
         uri = self.repository.uri;
 
         modules =
           (builtins.attrValues self.flakeModules)
           ++
-          [
-            # Needed for flake parts.
-            {
-              options.flake = lib.mkOption {
-                type = lib.types.attrsOf lib.types.anything;
-                default = {};
-                description = "Flake Toplevel options";
-              };
-            }
-          ];
+          # Needed for flake parts.
+          [{ options.flake = lib.mkOption {
+               type = lib.types.attrsOf lib.types.anything;
+               default = {};
+               description = "Flake Toplevel options";
+             };
+          }];
       };
 
       packages.nixosDocsMD = generate {
@@ -106,7 +91,7 @@ _: { self, inputs, config, lib, pkgs, ... }:
             ''
             ]
             ++
-            ((map (p: "ln -s ${p} docs/${lib.traceVal p.name}") mdDocs))
+            ((map (p: "ln -s ${p} docs/${p.name}") mdDocs))
             ++
             [''
             python -m mkdocs build -f ${mkdocsYaml}
