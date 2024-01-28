@@ -15,8 +15,7 @@ _: { self, inputs, config, lib, pkgs, ... }:
       }:
         let
           eval = lib.evalModules {
-            inherit modules;
-            check = false;
+            modules = map (x: x // { config._module.check = false; }) modules;
           };
 
           docs = nixosOptionsDoc {
