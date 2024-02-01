@@ -14,6 +14,6 @@ in
       writeShellScript "scrape.sh" ''
         ${pkgs.curl}/bin/curl -s https://example.com > /tmp/scraped.html
         ''
-    ) {};
+    );
   };
 }
