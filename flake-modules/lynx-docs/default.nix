@@ -13,14 +13,12 @@ in
   options.lynx.docgen = {
     flakeModules = mkOption {
       type = types.nullOr (types.listOf types.anything);
-      # default = (builtins.attrValues self.flakeModules);
       default = null;
     };
 
     nixosModules = mkOption {
       type = types.nullOr (types.listOf types.anything);
       default = null;
-      # default = (builtins.attrValues self.nixosModules);
     };
 
     repository = {
