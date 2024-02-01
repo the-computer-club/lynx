@@ -1,12 +1,3 @@
-# lynx
-modern modules for the nix ecosystem. 
-
-this repository provides flake modules and nixosModules, and is primarily a shared library.
-
-## Bibliography
-- https://flake.parts
-
-``` nix
 {
   description = "minimal flake example";
   inputs = {
@@ -21,9 +12,9 @@ this repository provides flake modules and nixosModules, and is primarily a shar
     {
       systems = ["x86_64-linux"];
       imports = [ ];
-      
+
       flake.nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs self; }
+          specialArgs = { inherit inputs self; };
           modules = [
               ./configuration.nix
               ./hardware-configuration.nix
@@ -31,4 +22,3 @@ this repository provides flake modules and nixosModules, and is primarily a shar
       };
     });
 }
-```

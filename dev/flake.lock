@@ -3,7 +3,7 @@
     "lynx": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-pNCTyDfxT4GTuVANpV+WrTedkretVgDOToHmx3OI198=",
+        "narHash": "sha256-ZM9ZNquH3Z0i0p08xzJTM9v/61u4AmSPwfVZ+xBvnfQ=",
         "path": "../",
         "type": "path"
       },
@@ -14,16 +14,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1706515015,
-        "narHash": "sha256-eFfY5A7wlYy3jD/75lx6IJRueg4noE+jowl0a8lIlVo=",
+        "lastModified": 1706550542,
+        "narHash": "sha256-UcsnCG6wx++23yeER4Hg18CXWbgNpqNXcHIo5/1Y+hc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f4a8d6d5324c327dcc2d863eb7f3cc06ad630df4",
+        "rev": "97b17f32362e475016f942bbdfda4a4a72a8a652",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-23.11",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }

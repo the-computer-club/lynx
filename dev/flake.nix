@@ -2,7 +2,7 @@
   description = "flake example";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     parts.url = "github:hercules-ci/flake-parts";
     lynx.url = "path:../";
   };
@@ -13,6 +13,9 @@
     {
       systems = ["x86_64-linux"];
       imports = [
+        ../examples/dogfood.nix
+        ../examples/nixos-module.nix
+        ../examples/flake-module.nix
         lynx.flakeModules.deploy-rs
         lynx.flakeModules.lynx-docs
       ];
@@ -27,9 +30,6 @@
       lynx.docgen.nixosModules = [
         lynx.nixosModules.globals
       ];
-
-
-
 
       perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
         {

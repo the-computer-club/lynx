@@ -7,26 +7,9 @@ Configurations flake/nixos modules are loaded by the end user, and their system 
 Flake parts is the primary back bone of this project, allowing for the top level of flakes to be composed with the nixos-module mechanism.
 
 
+Do not use overlays, as many flakes can do without them.
+
 ### Writing Flake Modules
-``` nix
-# flake-module.nix
-{config, lib, ...}:
-{
-  options.lynx.my-flake-module = {
-    enable = lib.mkEnableOption "enable my-flake-module";
-  };
-  
-  config = lib.mkIf {
-    # places on the top level of the flake
-    flake.hello = "hello";
-  
-    # accessing pkgs, and defining your own
-    perSystem = {config, lib, pkgs, ...}: {
-      packages.foobar = pkgs.hello;
-    };
-  };
-}
-```
 
 ``` nix
 # your flake.nix
@@ -82,30 +65,43 @@ nix repl
 ```
 
 
-## Using self defined packages
-
+## Putting it all together
 ``` nix
+{config, lib, ...}: # In the flake module
+let
+  flake-cfg = config;
+in
 {
-    perSystem = {config, lib, pkgs, ...}:
-    {
-        packages.my-script = pkgs.callPackage(
-            {writeShellScriptBin, cowsay, ...}:
-                writeShellScriptBin "something-fancy.sh" { buildInputs=[ cowsay ]; } 
-                ''
-                cowsay "flake parts!"
-                '';
-        ) {};
-        
-        packages.my-wrapper = pkgs.callPackage(
-            { my-script, writeShellScriptBin, ... }: 
-                writeShellScriptBin "fancy-cow.sh" { buildInputs = [ my-script ]; } 
-                ''
-                something-fancy.sh > ~/remember-me
-                ''
-        ) { my-script = config.my-script; };
-    }
+  flake.nixosModules.my-fancy-service = {lib, config, pkgs, ... }:
+    { # in the nixos Module
+      options.services.my-fancy-service = {
+        enable = lib.mkEnableOption "fancy service";
+        package = lib.mkOption {
+          default = flake-cfg.packages.my-wrapper;
+        };
+      };
+    };
 
+    perSystem = {config, lib, pkgs, ...}:
+      {
+        packages.my-script = pkgs.callPackage(
+          {writeShellScript, cowsay, ...}:
+          writeShellScript "something-fancy.sh"
+            ''
+              ${pkgs.cowsay}/bin/cowsay "flake parts!"
+            ''
+        ) {};
+
+        packages.my-wrapper = pkgs.callPackage (
+          { my-script, writeShellScript, ... }:
+          writeShellScript "fancy-cow.sh"
+            ''
+            ${my-script} > ./remember-me
+            ''
+        ) { my-script = config.packages.my-script; };
+      };
 }
+
 ```
 
 
