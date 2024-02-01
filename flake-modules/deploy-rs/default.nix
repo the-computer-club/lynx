@@ -1,4 +1,4 @@
-_: { self, inputs, config, lib, pkgs, ... }:
+{config, lib, ... }:
 with lib;
 let
   cfg = config.deploy;
