@@ -9,6 +9,7 @@
     profile-parts.url = "github:adamcstephens/profile-parts";
 
     lynx.url = "github:the-computer-club/lynx";
+    disko.url = "github:nix-community/disko";
   };
 
   outputs = inputs@{self, parts, nixpkgs, home-manager, ...}:

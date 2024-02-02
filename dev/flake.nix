@@ -2,9 +2,14 @@
   description = "flake example";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    parts.url = "github:hercules-ci/flake-parts";
     lynx.url = "path:../";
+    parts.url = "github:hercules-ci/flake-parts";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+    profile-parts.url = "github:adamcstephens/profile-parts";
+
+    disko.url = "github:nix-community/disko";
+    # deploy-rs.url = "github:adamcstephens/profile-parts";
   };
 
   outputs = inputs@{self, parts, lynx, nixpkgs, ...}:
@@ -16,6 +21,9 @@
         ../examples/dogfood.nix
         ../examples/nixos-module.nix
         ../examples/flake-module.nix
+        ../templates/redpilled/parts/top-level.nix
+
+
         lynx.flakeModules.deploy-rs
         lynx.flakeModules.lynx-docs
       ];
@@ -35,8 +43,9 @@
         {
           packages.default = pkgs.mkShell {
             shellHook = ''
-              alias build="nix flake update && nix build .#generateDocsHTML"
-            '';
+              alias build="nix flake update && nix build"
+              alias repl="nix flake update && nix repl"
+           '';
           };
         };
     });

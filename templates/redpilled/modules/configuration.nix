@@ -8,16 +8,19 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./disko.nix
     ];
+
+
+  users.users.lunarix = {
+    group = "lunarix";
+    isNormalUser = true;
+  };
+  users.groups.lunarix = {};
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  fileSystems."/" = {
-    device = "/dev/sda1";
-    fsType = "ext4";
-  };
 
   networking.hostName = "nixos";
   system.stateVersion = "23.11";

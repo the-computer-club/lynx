@@ -1,4 +1,4 @@
-_: { self, inputs, config, lib, pkgs, ... }:
+{ self, inputs, config, lib, pkgs, ... }:
 {
   imports = [
     ./home-manager.nix

@@ -3,6 +3,7 @@
 {
   imports = [
     inputs.profile-parts.flakeModules.nixos
+    inputs.lynx.flakeModules.profile-parts-homexts
   ];
 
   # default settings for nixosConfigurations
@@ -29,5 +30,7 @@
   profile-parts.nixos.default.modules = [
     ../modules/configuration.nix
     ../modules/hardware-configuration.nix
+    self.nixosModules.lunarix-home
+    inputs.home-manager.nixosModules.home-manager
   ];
 }

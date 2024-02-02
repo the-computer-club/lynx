@@ -4,6 +4,7 @@
     flakeModules = {
       deploy-rs = import ./flake-modules/deploy-rs;
       lynx-docs = import ./flake-modules/lynx-docs;
+      profile-parts-homexts = import ./flake-modules/profile-parts-homext.nix;
     };
 
     nixosModules = {

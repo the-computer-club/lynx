@@ -1,7 +1,6 @@
 # lynx
-modern modules for the nix ecosystem. 
-
-this repository provides flake modules and nixosModules, and is primarily a shared library.
+framework repository
+nix, this repository provides flake-parts modules and nixosModules.
 
 ## Bibliography
 - https://flake.parts
