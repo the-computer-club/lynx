@@ -1,6 +1,8 @@
 # lynx
-framework repository
-nix, this repository provides flake-parts modules and nixosModules.
+lynx is an opinionated (edumucated) utility box for nixos configurations. 
+lynx primarily uses the flake-parts framework.
+
+lynx aims to have similar goals to nixpkgs, providing documentation, testing, and source code.
 
 ## Bibliography
 - https://flake.parts
