@@ -33,6 +33,12 @@ in
                 if [[ -z "$TRYPASS" ]]; then
                     read -sp "Enter key for ${ds}:" TRYPASS
                 fi
+
+                if [[ "REBOOT" -eq "$TRYPASS" ]]; then
+                  echo b > /proc/sysrq-trigger
+                  kill -9 $$
+                fi
+
                 echo "$TRYPASS" | zfs load-key "${ds}" && success=true
                 if [[ $success != true ]]; then
                     echo "Wrong key, try again"
