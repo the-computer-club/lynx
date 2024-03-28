@@ -1,7 +1,7 @@
 #####
 # bring down peer list from flake-guard to nixos
 #########
-_: args@{ config, lib, pkgs, ... }:
+args@{ config, lib, pkgs, ... }:
 let
   rootConfig = config.wireguard;
   inherit (import ./lib.nix args)
