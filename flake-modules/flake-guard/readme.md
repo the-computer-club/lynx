@@ -13,7 +13,7 @@
     listenPort = 51820;
     
     peers.by-name = { #
-      hostname = {
+      host1 = {
         publicKey = "g72lA+Jsvp7ZEmXQGpJCrzMVrorSTjr6/kbD9aaLyX0=";
             # privateKeyFile = "....";
             # or 
@@ -22,6 +22,10 @@
             ipv6 = [ "fc90::1" ];
             selfEndpoint = "example.com:51820";
         };
+      };
+      
+      host2 = {
+        ...
       };
     };
   };
@@ -32,7 +36,7 @@
 # nixos module
 { config, lib, pkgs, ... }:
 let
-  net = config.networking.wireguard.networks.seclan;
+  net = config.networking.wireguard.networks.my-network;
 in
 {
   imports = [ lynx.nixosModules.flake-guard-host ];
@@ -46,8 +50,14 @@ in
 
     wireguard.networks.my-network.autoConfig = {
       interface = true; # automatically get ips & privatekey
-      peers = true; # Automatic mesh
+      peers = false; # Auto mesh all peers
     };
+    
+    # custom peers
+    wireguard.interfaces.my-network.peers = with net.peers.by-name; [
+      host1
+      host2
+    ];
   };
 }
 
