@@ -34,12 +34,12 @@
 
 ```nix
 # nixos module
-{ config, lib, pkgs, ... }:
+{ self, config, lib, pkgs, ... }:
 let
   net = config.networking.wireguard.networks.my-network;
 in
 {
-  imports = [ lynx.nixosModules.flake-guard-host ];
+  imports = [ self.nixosModules.flake-guard-host ];
 
   sops.secrets.my-network.mode = "0400";
 
