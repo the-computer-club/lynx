@@ -1,13 +1,3 @@
-# lynx
-lynx is an opinionated (edumucated) utility box for nixos configurations. 
-lynx primarily uses the flake-parts framework.
-
-lynx aims to have similar goals to nixpkgs, providing documentation, testing, and source code.
-
-## Bibliography
-- https://flake.parts
-
-``` nix
 {
   description = "minimal flake example";
   inputs = {
@@ -22,9 +12,9 @@ lynx aims to have similar goals to nixpkgs, providing documentation, testing, an
     {
       systems = ["x86_64-linux"];
       imports = [ ];
-      
+
       flake.nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs self; }
+          specialArgs = { inherit inputs self; };
           modules = [
               ./configuration.nix
               ./hardware-configuration.nix
@@ -32,4 +22,3 @@ lynx aims to have similar goals to nixpkgs, providing documentation, testing, an
       };
     });
 }
-```
