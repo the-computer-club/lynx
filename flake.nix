@@ -11,8 +11,8 @@
     nixosModules = {
       globals = import ./nixos-modules/globals.nix;
       fs.zfs = {
-        encrypted-ephemeral = ./nixos-modules/fs/zfs/encrypted-ephemeral.nix;
-        reuse-password-prompt = ./nixos-modules/fs/zfs/reuse-password-prompt.nix;
+        encrypted-ephemeral = import ./nixos-modules/fs/zfs/encrypted-ephemeral.nix;
+        reuse-password-prompt = import ./nixos-modules/fs/zfs/reuse-password-prompt.nix;
       };
     };
   };
