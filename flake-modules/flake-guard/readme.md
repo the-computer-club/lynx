@@ -13,7 +13,7 @@
     listenPort = 51820;
     
     peers.by-name = { #
-      host1 = {
+      host1 = { # <- WARNING: networking.hostName = "host1"; must be set for autoConfig
         publicKey = "g72lA+Jsvp7ZEmXQGpJCrzMVrorSTjr6/kbD9aaLyX0=";
             # privateKeyFile = "....";
             # or 
