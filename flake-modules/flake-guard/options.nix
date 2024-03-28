@@ -137,6 +137,4 @@ in
         }
       ) network.peers.by-name;
     }) config.wireguard.networks;
-
-  config.flake.testing = config.wireguard;
 }
