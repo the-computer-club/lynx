@@ -1,7 +1,57 @@
-_: { self, inputs, config, lib, pkgs, ... }:
+{ config, lib, ... }:
+let
+  inherit (lib)
+    optionals
+    mkOption
+    mkMerge
+    types
+    ;
+
+  cfg = config.lynx.docgen;
+in
 {
-  config.perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
-    let generate = pkgs.callPackage ({
+  options.lynx.docgen = {
+    flakeModules = mkOption {
+      type = types.nullOr (types.listOf types.anything);
+      default = null;
+    };
+
+    nixosModules = mkOption {
+      type = types.nullOr (types.listOf types.anything);
+      default = null;
+    };
+
+    repository = {
+      baseUri = lib.mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+    };
+  };
+
+  config.perSystem = args@{ config, inputs', pkgs, lib, system, ... }:
+    let
+      cleanDocs = pkgs.callPackage ({
+        stdenv
+        , name
+        , src
+        , uri ? null
+        , htmlSafe ? false
+        , runCommand
+        , gnused
+        , coreutils
+      }: runCommand name { buildInputs = [ gnused coreutils ]; }
+      ''
+        cat ${src.out} \
+          ${if htmlSafe then
+            ''| sed -e "s|\\\<|\&lt\;|g"'' else "" } \
+          ${if uri != null then
+            ''| sed -e "s|file:///nix/store/.*-source/|${uri}|g"''
+            else ""} \
+        > $out
+      '');
+
+      generate = pkgs.callPackage ({
         lib
         , name
         , runCommand
@@ -15,9 +65,8 @@ _: { self, inputs, config, lib, pkgs, ... }:
       }:
         let
           eval = lib.evalModules {
-            # maybe scary and wrong.
-            # but emperically, it works.
-            modules = map (x: x // { config._module.check = false; }) modules;
+            inherit modules;
+            check = false; # ignore warnings
           };
 
           docs = nixosOptionsDoc {
@@ -43,10 +92,9 @@ _: { self, inputs, config, lib, pkgs, ... }:
       packages.flakeDocsMD = generate {
         name = "flake-options.md";
         htmlSafe = true;
-        uri = self.repository.uri;
-
+        uri = cfg.repository.baseUri;
         modules =
-          (builtins.attrValues self.flakeModules)
+          cfg.flakeModules
           ++
           # Needed for flake parts.
           [{ options.flake = lib.mkOption {
@@ -60,8 +108,8 @@ _: { self, inputs, config, lib, pkgs, ... }:
       packages.nixosDocsMD = generate {
         name = "nixos-options.md";
         htmlSafe = true;
-        uri = self.repository.uri;
-        modules = builtins.attrValues self.nixosModules;
+        uri = cfg.repository.baseUri;
+        modules = cfg.nixosModules;
       };
 
       packages.generateDocsHTML = pkgs.callPackage ({
@@ -72,33 +120,28 @@ _: { self, inputs, config, lib, pkgs, ... }:
         , mdDocs ? []
         , ...
       }:
-        pkgs.stdenv.mkDerivation {
+        stdenv.mkDerivation {
           name = "docs";
           phases = "installPhase";
 
-          nativeBuildInputs = [
-            (python3.withPackages( ps: [
-              # mkdocs doesn't like
-              # overriding mkdocs-materials
-              ps.mkdocs
-              ps.mkdocs-material
-            ]))
-          ];
-
-          installPhase = builtins.concatStringsSep "\n" (
+          nativeBuildInputs =
             [
-            ''
-            mkdir -p $out/docs docs
-            ''
-            ]
-            ++
-            ((map (p: "ln -s ${p} docs/${p.name}") mdDocs))
-            ++
-            [''
-            python -m mkdocs build -f ${mkdocsYaml}
-            mv site docs $out
-            '']
-          );
+              (python3.withPackages(ps: [
+                # mkdocs doesn't like
+                # overriding mkdocs-materials
+                ps.mkdocs
+                ps.mkdocs-material
+              ]))
+            ];
+
+          installPhase =
+              ''
+              mkdir -p $out/docs docs
+              ${builtins.concatStringsSep "\n" (map (s: "ln -s ${s} docs/${s.name}") mdDocs) }
+              python -m mkdocs build -f ${mkdocsYaml}
+              mv site docs $out
+              ''
+            ;
         })
         {
           mkdocsYaml = pkgs.writeText "mkdocs.yml" ''
@@ -114,10 +157,13 @@ _: { self, inputs, config, lib, pkgs, ... }:
                 scheme: slate
           '';
 
-          mdDocs = [
-            config.packages.nixosDocsMD
-            config.packages.flakeDocsMD
-          ];
+          mdDocs =
+            map (md: cleanDocs { src = md; htmlSafe = true; uri=cfg.repository.baseUri; name=md.name; })
+              (
+                (optionals (cfg.nixosModules != null) [ config.packages.nixosDocsMD ])
+                ++
+                (optionals (cfg.flakeModules != null) [ config.packages.flakeDocsMD ])
+              );
         };
     };
 }
