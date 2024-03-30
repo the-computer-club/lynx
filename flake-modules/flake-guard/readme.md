@@ -86,7 +86,8 @@ Thats it, you're done.
 
 ### Non-mesh topology.
 ```nix
-let net = config.networking.wireguard.networks."my-network"
+let 
+  net = config.networking.wireguard.networks."my-network";
 in
 {
   networking.wireguard.networks = {
