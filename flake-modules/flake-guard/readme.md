@@ -53,7 +53,7 @@ Repeat steps 2 through 3 for every nixosConfiguration in the network.
 
 
 Inside each host where we participate in the network. 
-```
+```nix
 { self, config, lib, pkgs, ... }:
 let
   net = config.networking.wireguard.networks;
@@ -85,7 +85,7 @@ Thats it, you're done.
 
 
 ### Non-mesh topology.
-```
+```nix
 let net = config.networking.wireguard.networks."my-network"
 in
 {
