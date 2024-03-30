@@ -94,8 +94,10 @@ in
                     if peer-data.privateKeyFile != null
                     then peer-data.privateKeyFile
                     else (
-                      if (lookup != null && config.sops.secrets ? "${lookup}" ) then
+                      if (lookup != null && config ? "sops" && config.sops.secrets ? "${lookup}" ) then
                         config.sops.secrets.${lookup}.path
+                      else if (lookup != null && config ? "age" && config.age.sops.secrets ? "${lookup}" ) then
+                        config.age.secrets.${lookup}.path
                       else null
                     );
                 ips = with peer-data; ipv4 ++ ipv6;
