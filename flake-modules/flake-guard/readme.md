@@ -5,8 +5,10 @@ flake guard allows you to define your wireguard network once, and use it across 
 ### Define your network.
 - Step 1: create `wireguard-network.nix`
 ```nix
-{ # flake-module
-  imports = [ lynx.flakeModules.flake-guard ];
+# flake-module
+{ config, lib, inputs, ... }:
+{
+  imports = [ inputs.lynx.flakeModules.flake-guard ];
 
   wireguard.enable = true;
   wireguard.networks.my-network = {
@@ -42,18 +44,36 @@ flake guard allows you to define your wireguard network once, and use it across 
 
 - Step 2:
 
+  Add your `wireguard-network.nix` in your `flake.nix`
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    parts.url = "github:hercules-ci/flake-parts";
+    lynx.url = "github:the-computer-club/lynx";
+  };
+
+  outputs = inputs: parts.lib.mkFlake { inherit inputs; }
+    (_: # https://flake.parts/module-arguments
+    {
+      imports = [ ./wireguard-network.nix ]; # <- here.
+    });
+}
+```
+
+- Step 3:
+
 Now create secrets for each nixosConfiguration this network is involved with. (or agenix equalivent)
 ```
 EDITOR=emacs sops secrets/default.json
 ```
 
 
-- Step 3: add a field named matching the `sopsLookup` value, and insert the output of `wg genkey`.
+- Step 4: add a field named matching the `sopsLookup` value, and insert the output of `wg genkey`.
 
-Repeat steps 2 through 3 for every nixosConfiguration in the network.
+Finally, add the following configuration to the host.
 
-
-Inside each host where we participate in the network. 
 ```nix
 { self, config, lib, pkgs, ... }:
 let
@@ -82,11 +102,15 @@ in
   };
 }
 ```
+
+Repeat steps 3 through 4 for every nixosConfiguration in the network.
+
 Thats it, you're done.
 
 
 ### Non-mesh topology.
 ```nix
+{config, lib, pkgs, ...}:
 let 
   net = config.networking.wireguard.networks."my-network";
 in
