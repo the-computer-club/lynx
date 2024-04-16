@@ -58,7 +58,7 @@ in
             };
 
             privateKeyFile = mkOption {
-              type = types.str;
+              type = types.unspecified;
             };
           };
         };
