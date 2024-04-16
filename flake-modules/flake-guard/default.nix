@@ -96,8 +96,8 @@ in
                     else (
                       if (lookup != null && config ? "sops" && config.sops.secrets ? "${lookup}" ) then
                         config.sops.secrets.${lookup}.path
-                      else if (lookup != null && config ? "age" && config.age.secrets ? "${lookup}" ) then
-                        config.age.secrets.${lookup}.path
+                      else if (lookup != null && config ? "agenix" && config.agenix.secrets ? "${lookup}" ) then
+                        config.agenix.secrets.${lookup}.path
                       else null
                     );
                 ips = with peer-data; ipv4 ++ ipv6;
