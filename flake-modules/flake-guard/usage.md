@@ -27,7 +27,6 @@ Flake guard provides wireguard networks as a flake option.
 ```
 
 ```
-
 inputs.nixpkgs.url    = "github:nixos/nixpkgs";
 inputs.parts.url      = "github:the-computer-club/flake-parts";
 inputs.lynx.url       = "github:the-computer-club/lynx";
@@ -42,14 +41,14 @@ outputs = inputs: inputs.parts.lib.mkFlake {inherit inputs;} ({
 
     wireguard.enable = true;
     
-    nixosConfigurations.hostname = inputs.nixpkgs.lib.nixosSystem {       
+    nixosConfigurations.hostname = inputs.nixpkgs.lib.nixosSystem {
       modules = [
         self.nixosModules.flake-guard-host
         {
-           networking.wireguard.networks.gateway-zone.autoConfig = {
-             interface = true;
-             peers = true;
-           };
+          networking.wireguard.networks.gateway-zone.autoConfig = {
+            interface = true;
+            peers = true;
+          };
         }
         ./home.nix
         ./home-hardware.nix

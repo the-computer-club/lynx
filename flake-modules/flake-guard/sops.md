@@ -20,22 +20,23 @@ flake guard allows you to define your wireguard network once, and use it across 
     # assumes the same port for all hosts.
     listenPort = 51820;
     
-    peers.by-name = { #
+    peers.by-name = {
       # WARNING: networking.hostName = "host1"; 
-      # must match `host1 = ...` for `autoConfig` to work. (flake-guard-host)
+      # must match `host1 = ...` for `autoConfig` to work.
+      # (flake-guard-host)
       host1 = {
-        publicKey = "g72lA+Jsvp7ZEmXQGpJCrzMVrorSTjr6/kbD9aaLyX0=";
-            ipv4 = [ "172.16.0.1/32" ];
-            ipv6 = [ "fc90::1/128" ];
-            selfEndpoint = "example.com:51820";
+          publicKey = "g72lA+Jsvp7ZEmXQGpJCrzMVrorSTjr6/kbD9aaLyX0=";
+          ipv4 = [ "172.16.0.1/32" ];
+          ipv6 = [ "fc90::1/128" ];
+          selfEndpoint = "example.com:51820";
         };
       };
 
       host2 = {
-        publicKey = "ic/rfXxqoA4U0eaiL2VvVdkPIjvQL5p0lO/kk2lWZ0M=";
-            ipv4 = [ "172.16.0.1/32" ];
-            ipv6 = [ "fc90::1/128" ];
-            selfEndpoint = "example.com:51820";
+          publicKey = "ic/rfXxqoA4U0eaiL2VvVdkPIjvQL5p0lO/kk2lWZ0M=";
+          ipv4 = [ "172.16.0.1/32" ];
+          ipv6 = [ "fc90::1/128" ];
+          selfEndpoint = "example.com:51820";
         };
       };
     };
