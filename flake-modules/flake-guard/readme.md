@@ -2,6 +2,7 @@
 
 flake guard allows you to define your wireguard network once, and use it across multiple `nixosConfiguration` fields.
 
+
 ### Define your network.
 - Step 1: create `wireguard-network.nix`
 ```nix

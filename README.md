@@ -4,8 +4,14 @@ lynx primarily uses the flake-parts framework.
 
 lynx aims to have similar goals to nixpkgs, providing documentation, testing, and source code.
 
+> [!WARNING]
+> This product assumes you're already familiar with the nix ecosystem. Error messages produced by the module system can be unclear and sometimes not informative. Documentation, and other resources in this repository may expect such literacy from its users. 
+
+
 ## Bibliography
+- https://github.com/tweag/rfcs/blob/flakes/rfcs/0049-flakes.md
 - https://flake.parts
+- https://unallocatedspace.dev/blog/emc2i-flake
 
 ``` nix
 {
