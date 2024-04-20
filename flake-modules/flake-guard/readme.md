@@ -26,7 +26,7 @@ The peer list is the primary data structure needed to configure the wireguard ne
 which introduces the following
 
 
-
+| field      | description                                                        |
 |------------|--------------------------------------------------------------------|
 | peers      | the network's peer list, same as the flake level.                  |
 | self       | this host selected from the peer list                              |
