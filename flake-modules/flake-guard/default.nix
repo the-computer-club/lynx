@@ -85,11 +85,11 @@ in
                 inherit listenPort;
                 privateKeyFile =
                   let
+
                     secondarySops = rootConfig.build.networks.${net-name}.peers.by-name.${self-name}.sopsLookup;
                     lookup = if peer-data.sopsLookup != null
                             then peer-data.sopsLookup
                             else secondarySops;
-
                   in
                     if peer-data.privateKeyFile != null
                     then peer-data.privateKeyFile

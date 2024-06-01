@@ -21,7 +21,6 @@
         ../examples/dogfood.nix
         ../examples/nixos-module.nix
         ../examples/flake-module.nix
-
         lynx.flakeModules.deploy-rs
         lynx.flakeModules.lynx-docs
       ];
