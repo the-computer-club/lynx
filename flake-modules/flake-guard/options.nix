@@ -55,6 +55,11 @@ inherit (lib)
         default = null;
       };
 
+      persistentKeepalive= mkOption {
+        type = types.nullOr types.int;
+        default = null;
+      };
+
       # module = mkOption {
       #   type = types.nullOr types.unspecified;
       #   default = null;
