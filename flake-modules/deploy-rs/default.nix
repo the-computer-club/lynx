@@ -52,7 +52,7 @@ let
         '';
     };
 
-    autoRollBack = mkOption {
+    autoRollback = mkOption {
       type = types.bool;
       default = true;
       description = ''
