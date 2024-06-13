@@ -10,7 +10,7 @@
     default = {};
 
     description = ''
-      evaluate flake modules as their under their own namespace,
+      evaluate flake modules as their own namespace,
       seperate from the parent. These options are built on their
       respective names in `config.build.domains`
     '';
