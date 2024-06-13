@@ -1,6 +1,17 @@
 {
   description = "Repository of shared modules";
   outputs = _: {
+    lib.requireInput = x: url: inputs: cfg:
+      if (inputs ? x) then cfg
+      else assert ''
+        requires "${x}" as input.
+
+        place the following snippet in your flake.nix file
+        to use this functionality:
+
+        inputs.${x}.url = ${url}
+      '';
+
     flakeModules = {
       deploy-rs   = import ./flake-modules/deploy-rs;
       lynx-docs   = import ./flake-modules/lynx-docs;
