@@ -40,7 +40,7 @@
         default = [];
       };
 
-      options.specialArgs = mkOption {
+      options.specialArgs = lib.mkOption {
         type = attrsOf raw;
         default = {};
       };
@@ -55,6 +55,7 @@
   config.build.domains = builtins.mapAttrs(domain: toplevel:
     (flake-parts-lib.evalFlakeModule {
       inherit inputs;
-    } toplevel)
+      inherit (toplevel) specialArgs;
+    } { imports = toplevel.modules; })
   ) config.domains;
 }
