@@ -26,12 +26,6 @@ in
     let cfg = config.networking.wireguard.networks;
     in
   {
-    options.networking.wireugard._flake-guard = mkOption {
-      internal = true;
-      default = rootConfig.enable;
-      type = types.bool;
-    };
-
     options.networking.wireguard.networks = mkOption {
       default = {};
       type = types.attrsOf (types.submodule {
@@ -70,12 +64,8 @@ in
       });
     };
 
-    config = mkIf rootConfig.enable
-    {
-
-      networking.wireguard.networks = mapAttrs (net-name: network:
+    config.networking.wireguard.networks = (mapAttrs (net-name: network:
         let
-
           self-name = builtins.head
                   (builtins.filter (x: x == config.networking.hostName)
                     (builtins.attrNames network.peers.by-name));
@@ -113,10 +103,11 @@ in
           inherit self;
           peers.by-name = mapAttrs (pname: peer: (toPeer peer)) network.peers.by-name;
           peers.list = map toPeer (builtins.attrValues network.peers.by-name);
-        }) rootConfig.networks;
+        }) rootConfig.networks);
 
-      networking.wireguard.interfaces = mapAttrs (net-name: network:
-        mkIf network.autoConfig.interface {
+    config.networking.wireguard.interfaces = mapAttrs (net-name: network:
+        mkIf network.autoConfig.interface
+        {
           inherit (config.networking.wireguard.networks.${net-name}.self)
             listenPort
             privateKeyFile
@@ -128,17 +119,5 @@ in
             );
         })
         config.networking.wireguard.networks;
-
-      assertions = [
-        { assertion = (!config.networking.wireguard._flake-guard) &&
-                 lib.any (lib.mapAttrsToList (k: v: v.interface || v.peers ));
-          message = ''
-            You have enabled `networking.wireguard.networks.*.autoConfig.(peers|interface)`
-            But you have not set `wireguard.enable` to `true` in the flakeModule system.
-          '';
-        }
-      ];
-
-    };
   };
 }
