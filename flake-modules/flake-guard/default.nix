@@ -26,11 +26,16 @@ in
     let cfg = config.networking.wireguard.networks;
     in
   {
+    options.networking.wireugard._flake-guard = mkOption {
+      internal = true;
+      default = rootConfig.enable;
+      type = types.bool;
+    };
+
     options.networking.wireguard.networks = mkOption {
       default = {};
       type = types.attrsOf (types.submodule {
         options = {
-
           autoConfig = {
             interface = mkEnableOption "automatically generate the underlying network interface";
             peers = mkEnableOption "automatically generate the peers -- this will add all peers in the network to the interface.";
@@ -123,6 +128,17 @@ in
             );
         })
         config.networking.wireguard.networks;
+
+      assertions = [
+        { assertion = (!config.networking.wireguard._flake-guard) &&
+                 lib.any (lib.mapAttrsToList (k: v: v.interface || v.peers ));
+          message = ''
+            You have enabled `networking.wireguard.networks.*.autoConfig.(peers|interface)`
+            But you have not set `wireguard.enable` to `true` in the flakeModule system.
+          '';
+        }
+      ];
+
     };
   };
 }
