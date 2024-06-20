@@ -2,18 +2,22 @@
   description = "Repository of shared modules";
   outputs = _: {
     flakeModules = {
-      deploy-rs   = import ./flake-modules/deploy-rs;
-      lynx-docs   = import ./flake-modules/lynx-docs;
-      flake-guard = import ./flake-modules/flake-guard;
-      profile-parts-homexts = import ./flake-modules/profile-parts-homext.nix;
+      "builtins" = ./flake-modules/builtins;
+      deploy-rs = ./flake-modules/deploy-rs;
+      lynx-docs = ./flake-modules/lynx-docs;
+      flake-guard = ./flake-modules/flake-guard;
+      domains = ./flake-modules/domains;
+      profile-parts-homexts = ./flake-modules/profile-parts-homext.nix;
     };
 
     nixosModules = {
-      globals = import ./nixos-modules/globals.nix;
+      globals = ./nixos-modules/globals.nix;
       fs.zfs = {
-        encrypted-ephemeral = import ./nixos-modules/fs/zfs/encrypted-ephemeral.nix;
-        reuse-password-prompt = import ./nixos-modules/fs/zfs/reuse-password-prompt.nix;
+        encrypted-ephemeral = ./nixos-modules/fs/zfs/encrypted-ephemeral.nix;
+        reuse-password-prompt = ./nixos-modules/fs/zfs/reuse-password-prompt.nix;
       };
     };
+
+    lib = ./lib.nix;
   };
 }
