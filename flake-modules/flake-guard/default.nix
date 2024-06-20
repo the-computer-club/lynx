@@ -11,6 +11,7 @@ let
     mkOption
     mkEnableOption
     mkIf
+    mkRemovedOptionModule
     types
     optionalString
     optionals
@@ -20,7 +21,17 @@ let
   ;
 in
 {
-  imports = [ ./options.nix  ];
+  imports = [
+    (mkRemovedOptionModule [ "wireguard" "enable" ] ''
+      wireguard.enable was removed because it often causes user errors
+      where `wireguard.enable` was set to `false` but users had enabled
+      the nixos options `autoConfig.interface`.
+      This lead to errors messages which were hard to understand.
+    '')
+
+    ./options.nix
+  ];
+
 
   flake.nixosModules.flake-guard-host = {config, ...}:
     let cfg = config.networking.wireguard.networks;
@@ -30,7 +41,6 @@ in
       default = {};
       type = types.attrsOf (types.submodule {
         options = {
-
           autoConfig = {
             interface = mkEnableOption "automatically generate the underlying network interface";
             peers = mkEnableOption "automatically generate the peers -- this will add all peers in the network to the interface.";
@@ -65,12 +75,9 @@ in
       });
     };
 
-    config = mkIf rootConfig.enable
-    {
-
-      networking.wireguard.networks = mapAttrs (net-name: network:
+    config.networking.wireguard.networks =
+      (mapAttrs (net-name: network:
         let
-
           self-name = builtins.head
                   (builtins.filter (x: x == config.networking.hostName)
                     (builtins.attrNames network.peers.by-name));
@@ -108,10 +115,11 @@ in
           inherit self;
           peers.by-name = mapAttrs (pname: peer: (toPeer peer)) network.peers.by-name;
           peers.list = map toPeer (builtins.attrValues network.peers.by-name);
-        }) rootConfig.networks;
+        }) rootConfig.networks);
 
-      networking.wireguard.interfaces = mapAttrs (net-name: network:
-        mkIf network.autoConfig.interface {
+    config.networking.wireguard.interfaces = mapAttrs (net-name: network:
+        mkIf network.autoConfig.interface
+        {
           inherit (config.networking.wireguard.networks.${net-name}.self)
             listenPort
             privateKeyFile
@@ -123,6 +131,8 @@ in
             );
         })
         config.networking.wireguard.networks;
-    };
   };
+
+
+
 }

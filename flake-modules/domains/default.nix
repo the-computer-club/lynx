@@ -1,7 +1,9 @@
 {
   inputs
   , config
+  , stdlib
   , lib
+  , lynxlib
   , flake-parts-lib
   , ...
 }:
@@ -53,7 +55,7 @@
   };
 
   config.build.domains = builtins.mapAttrs(domain: toplevel:
-    (flake-parts-lib.evalFlakeModule {
+    (lynxlib.evalFlakeModuleWithAssertions {
       inherit inputs;
       inherit (toplevel) specialArgs;
     } { imports = toplevel.modules; })

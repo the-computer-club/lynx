@@ -16,5 +16,7 @@
         reuse-password-prompt = import ./nixos-modules/fs/zfs/reuse-password-prompt.nix;
       };
     };
+
+    lib = import ./lib.nix;
   };
 }
