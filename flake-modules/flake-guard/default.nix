@@ -11,6 +11,7 @@ let
     mkOption
     mkEnableOption
     mkIf
+    mkRemovedOptionModule
     types
     optionalString
     optionals
@@ -20,7 +21,17 @@ let
   ;
 in
 {
-  imports = [ ./options.nix  ];
+  imports = [
+    (mkRemovedOptionModule [ "wireguard" "enable" ] ''
+      wireguard.enable was removed because it often causes user errors
+      where `wireguard.enable` was set to `false` but users had enabled
+      the nixos options `autoConfig.interface`.
+      This lead to errors messages which were hard to understand.
+    '')
+
+    ./options.nix
+  ];
+
 
   flake.nixosModules.flake-guard-host = {config, ...}:
     let cfg = config.networking.wireguard.networks;
@@ -64,7 +75,8 @@ in
       });
     };
 
-    config.networking.wireguard.networks = (mapAttrs (net-name: network:
+    config.networking.wireguard.networks =
+      (mapAttrs (net-name: network:
         let
           self-name = builtins.head
                   (builtins.filter (x: x == config.networking.hostName)
@@ -120,4 +132,7 @@ in
         })
         config.networking.wireguard.networks;
   };
+
+
+
 }
