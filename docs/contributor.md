@@ -18,10 +18,6 @@ Lynx does **not contain**:
     
   - Nixos Configurations (Share your modules with us instead)
     Instead, you may write tests which we run on our CI
-    
-  - Overlays (They're just cursed at scale.)
-    Everyone seems to hate them, and I've never needed them. 
-    So they're not included here.
   
   - Does not use `self` (flake modules isolated)
     Availability to `self` isn't nessicary. We instead prefer you use flake-modules `options` to declare namespaced variables. 
