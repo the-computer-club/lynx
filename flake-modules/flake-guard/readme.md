@@ -10,7 +10,6 @@ flake guard allows you to define your wireguard network once, and use it across 
 {
   imports = [ inputs.lynx.flakeModules.flake-guard ];
 
-  wireguard.enable = true;
   wireguard.networks.my-network = {
     # assumes same sop keys for all hosts.
     # this also works with agenix
