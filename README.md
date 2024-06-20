@@ -17,12 +17,23 @@ lynx aims to have similar goals to nixpkgs, providing documentation, testing, an
   };
 
   outputs = inputs@{self, parts, nixpkgs, lynx, ...}:
-    parts.lib.mkFlake { inherit inputs; }
+    let
+      lynx' = lynx.lib { flake-parts-lib=parts.lib; };
+      # mkFlake with config.assertions and 
+      # config.warnings support
+      ## parts.lib.mkFlake can be used instead aswell.
+      mkFlake = lynx'.mkFlakeWithAssertions;
+    in
+    mkFlake { inherit inputs; }
     (_: # https://flake.parts/module-arguments
     {
       systems = ["x86_64-linux"];
-      imports = [ ];
-      
+      imports = with lynx.flakeModules; [
+        flake-guard # define a wireguard network once, and use it everywhere.
+        deploy-rs   # types for deploy-rs
+        domains     # evaluate flake modules in their own namespace
+      ];
+
       flake.nixosConfigurations.default = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs self; }
           modules = [
