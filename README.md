@@ -18,7 +18,7 @@ lynx aims to have similar goals to nixpkgs, providing documentation, testing, an
 
   outputs = inputs@{self, parts, nixpkgs, lynx, ...}:
     let
-      lynx' = lynx.lib { flake-parts-lib=parts.lib; };
+      lynx' = import lynx.lib { flake-parts-lib=parts.lib; };
       # mkFlake with config.assertions and 
       # config.warnings support
       ## parts.lib.mkFlake can be used instead aswell.
