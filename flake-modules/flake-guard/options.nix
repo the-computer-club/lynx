@@ -74,7 +74,6 @@ inherit (lib)
 in
 {
   options.wireguard = {
-    enable = mkEnableOption "depreciated";
     networks = mkOption {
       type = types.attrsOf (types.submodule {
         options = {
