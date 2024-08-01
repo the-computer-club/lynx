@@ -49,11 +49,11 @@ in
     let cfg = config.flake-guard.networks;
     in
   {
-    # imports = [
-    #   (mkRenamedOptionModule
-    #     [ "networking" "wireguard" "networks" ]
-    #     [ "flake-guard" "networks" ])
-    # ];
+    imports = [
+      (mkRenamedOptionModule
+        [ "networking" "wireguard" "networks" ]
+        [ "flake-guard" "networks" ])
+    ];
 
     options.flake-guard = {
       enable = mkEnableOption "enable flake-guard nixos module";
@@ -108,17 +108,6 @@ in
 
             self = mkOption {
               type = types.attrsOf types.unspecified;
-
-              # types.submodule {
-              #   options = node-options.options // {
-              #     found = mkEnableOption "self was found.";
-
-              #     peers = mkOption {
-              #       type = types.attrsOf types.unspecified;
-              #       default = {};
-              #     };
-              #   };
-              # };
               default = {};
             };
           };

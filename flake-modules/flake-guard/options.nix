@@ -85,7 +85,7 @@ in
             ((peer // {
               inherit groups;
               keyLookup = peer-name;
-              hostWriter = mkGuardOpt "hostsWriter";
+              hostsWriter = mkGuardOpt "hostsWriter";
               interfaceWriter = mkGuardOpt "interfaceWriter";
               secretslookup = mkGuardOpt "secretsLookup";
               listenPort = mkGuardOpt "listenPort";
@@ -117,7 +117,7 @@ in
           # a = 1;
           interfaceName = net-name;
           # peers.by-group = by-group;
-          # peers.by-name = by-name;
+          peers.by-name = by-name;
         }))
      # ) config.wireguard.networks;
     ) config.wireguard.networks);
