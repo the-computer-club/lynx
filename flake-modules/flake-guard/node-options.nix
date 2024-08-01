@@ -18,7 +18,16 @@ with lib;
     };
 
     privateKeyFile = mkOption {
-      type = types.nullOr types.unspecified;
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    privateKey = mkOption {
+      description = ''
+        world wide web readable credentials
+      '';
+
+      type = types.nullOr (types.either types.str types.path);
       default = null;
     };
 
@@ -59,17 +68,17 @@ with lib;
       default = null;
     };
 
-    selfInterfaceWriter = mkOption {
-      type = types.nullOr types.str;
-      default = null;
+    interfaceWriter = mkOption {
+        type = types.enum [ "networking.wireguard.interfaces" ];
+        default = "networking.wireguard.interfaces";
     };
 
-    selfHostWriter = mkOption {
-      type = types.nullOr types.str;
-      default = null;
+    hostsWriter = mkOption {
+      type = types.enum [ "networking.hosts" ];
+      default = "networking.hosts";
     };
 
-    persistentKeepAlive = mkOption {
+    persistentKeepalive = mkOption {
       type = types.nullOr types.int;
       default = null;
     };

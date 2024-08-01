@@ -3,6 +3,10 @@ with builtins;
 let
   inherit (flake-parts-lib) evalFlakeModule;
 
+  rmParent = attr:
+    builtins.foldl' lib.recursiveUpdate {}
+      (lib.mapAttrsToList(k: v: v) attr);
+
   singleModuleBase = x: {
     imports = [
       ./flake-modules/builtins/assertions.nix
