@@ -7,7 +7,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     profile-parts.url = "github:adamcstephens/profile-parts";
-
     disko.url = "github:nix-community/disko";
     # deploy-rs.url = "github:adamcstephens/profile-parts";
   };
@@ -24,6 +23,7 @@
         [ lynx.flakeModules.builtins ]
         ++
         (with lynx.flakeModules; [
+          ../flake-modules/builtins/toplevel.nix
           ../examples/dogfood.nix
           ../examples/nixos-module.nix
           ../examples/flake-module.nix
