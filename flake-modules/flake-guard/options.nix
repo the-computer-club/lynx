@@ -55,6 +55,11 @@ inherit (lib)
         default = null;
       };
 
+      persistentKeepalive= mkOption {
+        type = types.nullOr types.int;
+        default = null;
+      };
+
       # module = mkOption {
       #   type = types.nullOr types.unspecified;
       #   default = null;
@@ -69,8 +74,6 @@ inherit (lib)
 in
 {
   options.wireguard = {
-    enable = mkEnableOption "Enable wireguard";
-
     networks = mkOption {
       type = types.attrsOf (types.submodule {
         options = {
@@ -127,14 +130,14 @@ in
   };
 
   config.wireguard.build.networks =
-    mapAttrs (net-name: network:
-    {
-      peers.by-name = mapAttrs (peer-name: peer:
-        peer // {
-          sopsLookup = if peer.sopsLookup != null
-                       then peer.sopsLookup
-                       else network.sopsLookup;
-        }
-      ) network.peers.by-name;
-    }) config.wireguard.networks;
+    (mapAttrs (net-name: network:
+      {
+        peers.by-name = mapAttrs (peer-name: peer:
+          peer // {
+            sopsLookup = if peer.sopsLookup != null
+                        then peer.sopsLookup
+                        else network.sopsLookup;
+          }
+        ) network.peers.by-name;
+      }) config.wireguard.networks);
 }

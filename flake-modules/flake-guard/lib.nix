@@ -19,7 +19,9 @@ inherit (lib)
 in
 rec {
   toPeer = p: {
-    inherit (p) publicKey;
+    inherit (p)
+      publicKey
+      persistentKeepalive;
     allowedIPs = p.ipv4 ++ p.ipv6;
     endpoint = p.selfEndpoint;
   };
