@@ -5,7 +5,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 let
-  cfg = config.lynx.boot.zfs.ephemeral;
+  cfg = config.boot.zfs.ephemeral;
   mkEZfs = mkOrder 1501;
 in
 {
