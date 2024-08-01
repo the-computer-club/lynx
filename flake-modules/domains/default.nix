@@ -26,7 +26,7 @@
 
           wireguard.enable = true;
           wireguard.networks.vxlan = {
-            sopsLookup = "wg-vxlan";
+            secretsLookup = "wg-vxlan";
             peers.by-name.gateway = {
               publicKey = "nwDPjwn9KPKw2wYNMe0CHP5oIJBJHFruRy62EoTjU1A=";
               ipv4 = ["172.16.1.1"];

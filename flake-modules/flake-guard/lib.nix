@@ -20,11 +20,25 @@ in
 rec {
   toPeer = p: {
     inherit (p)
+      meta
       publicKey
       persistentKeepalive;
     allowedIPs = p.ipv4 ++ p.ipv6;
     endpoint = p.selfEndpoint;
   };
+
+  toIpv4Range = ips:
+    map (ip:
+      let
+        list = (builtins.splitString "/" ip);
+        ip = builtins.head list;
+        cidr = builtins.elemAt 2 list;
+      in
+        { inherit ip cidr; }
+    ) ips;
+
+  toIpv4 = ip: builtins.head (builtins.splitString "/" ip);
+
 
   # interlace =
   #   s: a: b:
