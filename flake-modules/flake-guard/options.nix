@@ -48,11 +48,11 @@ in
 
     networks = mkOption {
       type = types.attrsOf (types.submodule network-options);
+      default = {};
     };
 
     build.networks = mkOption {
-      # type = types.attrsOf types.unspecified;
-
+      default = {};
       type = types.attrsOf (types.submodule {
         options = (
         lib.recursiveUpdate network-options.options
@@ -62,13 +62,9 @@ in
             default = {};
           };
         });
-
       });
-
-      default = {};
     };
   };
-
 
   config.wireguard.build.networks =
     (mapAttrs (net-name: network:
@@ -80,12 +76,10 @@ in
               then peer.${name}
               else network.${name};
 
-            groups = ["all"] ++ peer.groups;
             hosts = peer.extraHostnames ++ [peer.hostname];
           in
             ((peer //
             {
-              inherit groups;
               fqdns = lib.optionals (network.domainName != null && hosts != [] )
                 (map (h: "${h}.${network.domainName}" ) hosts );
 
@@ -104,19 +98,19 @@ in
         ) network.peers.by-name;
 
         by-group =
-        let
-          # first create flat list of all groups
-          all-groups = (lib.concatLists (mapAttrsToList(k: v: v.groups) by-name));
-          per-groups = lib.genAttrs all-groups
-            (group-name:
-              builtins.foldl' (s: x: lib.recursiveUpdate s { "${x.keyLookup}" = x;  })
-                {}
-                (lib.partition (p: builtins.elem group-name p.groups)
-                  (builtins.attrValues by-name)
-                ).right
-            );
-        in
-          per-groups;
+          let
+            # first create flat list of all groups
+            all-groups = (lib.concatLists (mapAttrsToList(k: v: v.groups) by-name));
+            per-groups = lib.genAttrs all-groups
+              (group-name:
+                builtins.foldl' (s: x: lib.recursiveUpdate s { "${x.keyLookup}" = x;  })
+                  {}
+                  (lib.partition (p: builtins.elem group-name p.groups)
+                    (builtins.attrValues by-name)
+                  ).right
+              );
+          in
+            per-groups;
       in
         network // {
           interfaceName = net-name;
