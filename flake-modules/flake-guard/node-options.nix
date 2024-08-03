@@ -36,6 +36,10 @@ with lib;
       default = null;
     };
 
+    keyLookup = mkOption {
+      type = types.str;
+    };
+
     hostname = mkOption {
       description = ''
         This data is used to correlate peer information with the correct nixos-machine.

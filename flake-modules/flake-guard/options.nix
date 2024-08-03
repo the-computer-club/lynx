@@ -25,12 +25,6 @@ network-options = import ./network-options.nix args;
 
 in
 {
-  # imports = [
-  #   (mkRenamedOptionModule
-  #     ["wireguard" "networks" "" "sopsLookup"]
-  #     ["wireguard" "networks" "" "secretsLookup"])
-  # ];
-
   options.wireguard = {
     secretsLookup.sops.enable = mkEnableOption ''
       enable looking up secrets via `sops.secrets ? <lookup>`.
@@ -57,16 +51,20 @@ in
     };
 
     build.networks = mkOption {
-      type = types.attrsOf types.unspecified;
+      # type = types.attrsOf types.unspecified;
 
-      # (types.submodule {
-      #   options = (node-options.options // {
-      #     peers.by-group = mkOption {
-      #       type = types.attrsOf types.attrsOf (types.submodule node-options);
-      #       default = {};
-      #     };
-      #   });
-      # });
+      type = types.attrsOf (types.submodule {
+        options = (
+        lib.recursiveUpdate network-options.options
+        {
+          peers.by-group = mkOption {
+            type = types.attrsOf types.attrsOf (types.submodule node-options);
+            default = {};
+          };
+        });
+
+      });
+
       default = {};
     };
   };
@@ -99,7 +97,7 @@ in
 
               hostsWriter = mkGuardOpt "hostsWriter";
               interfaceWriter = mkGuardOpt "interfaceWriter";
-              secretslookup = mkGuardOpt "secretsLookup";
+              secretsLookup = mkGuardOpt "secretsLookup";
               listenPort = mkGuardOpt "listenPort";
               privateKeyFile = mkGuardOpt "privateKeyFile";
             }))

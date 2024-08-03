@@ -43,8 +43,8 @@ in {
     };
 
     interfaceWriter = mkOption {
-        type = types.enum [ "networking.wireguard.interfaces" ];
-        default = "networking.wireguard.interfaces";
+      type = types.enum [ "networking.wireguard.interfaces" ];
+      default = "networking.wireguard.interfaces";
     };
 
     hostsWriter = mkOption {

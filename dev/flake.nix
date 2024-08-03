@@ -78,7 +78,7 @@
         };
 
         networking.firewall.allowedUDPPorts = [
-            config.flake-guard.networks.testnet.self.listenPort
+          config.flake-guard.networks.testnet.self.listenPort
         ];
       };
 
