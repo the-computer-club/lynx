@@ -2,6 +2,11 @@
 with lib;
 {
   options = {
+    fqdns = mkOption {
+      type = types.listOf types.str;
+      default = [];
+    };
+
     ipv6 = mkOption {
       type = types.listOf types.str;
       default = [];

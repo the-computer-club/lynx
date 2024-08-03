@@ -22,6 +22,11 @@ in {
       default = null;
     };
 
+    domainName = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
     privateKeyFile = mkOption {
       type = types.nullOr types.str;
       default = null;

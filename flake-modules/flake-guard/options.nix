@@ -22,6 +22,7 @@ inherit (import ./lib.nix)
 
 node-options = import ./node-options.nix args;
 network-options = import ./network-options.nix args;
+
 in
 {
   # imports = [
@@ -70,6 +71,7 @@ in
     };
   };
 
+
   config.wireguard.build.networks =
     (mapAttrs (net-name: network:
      let
@@ -81,10 +83,20 @@ in
               else network.${name};
 
             groups = ["all"] ++ peer.groups;
+            hosts = peer.extraHostnames ++ [peer.hostname];
           in
-            ((peer // {
+            ((peer //
+            {
               inherit groups;
+              fqdns = lib.optionals (network.domainName != null && hosts != [] )
+                (map (h: "${h}.${network.domainName}" ) hosts );
+
               keyLookup = peer-name;
+              hostname =
+                if peer.hostname == null
+                then peer-name
+                else peer.hostname;
+
               hostsWriter = mkGuardOpt "hostsWriter";
               interfaceWriter = mkGuardOpt "interfaceWriter";
               secretslookup = mkGuardOpt "secretsLookup";
@@ -96,29 +108,22 @@ in
         by-group =
         let
           # first create flat list of all groups
-          all-groups = lib.unique (lib.concatLists (mapAttrsToList(k: v: v.groups) by-name));
-
-          #create it into an attr => { "${group}"= [ p ] }
+          all-groups = (lib.concatLists (mapAttrsToList(k: v: v.groups) by-name));
           per-groups = lib.genAttrs all-groups
             (group-name:
-              lib.partition (p: builtins.elem group-name p.groups)
-              by-name
-            )
-            .right;
-
-          per-groups-attrs = map (peer: group: peers: builtins.foldl' (s: x:
-            s // { ${x.keyLookup} = network.peers.by-name.${x.keyLookup}; }
-          ) {} peers) per-groups;
-
+              builtins.foldl' (s: x: lib.recursiveUpdate s { "${x.keyLookup}" = x;  })
+                {}
+                (lib.partition (p: builtins.elem group-name p.groups)
+                  (builtins.attrValues by-name)
+                ).right
+            );
         in
-          per-groups-attrs;
+          per-groups;
       in
-        (lib.traceValSeqN 3 (network // {
-          # a = 1;
+        network // {
           interfaceName = net-name;
-          # peers.by-group = by-group;
+          peers.by-group = by-group;
           peers.by-name = by-name;
-        }))
-     # ) config.wireguard.networks;
+        }
     ) config.wireguard.networks);
 }
