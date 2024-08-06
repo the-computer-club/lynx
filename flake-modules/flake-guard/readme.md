@@ -13,7 +13,7 @@ flake guard allows you to define your wireguard network once, and use it across 
   wireguard.networks.my-network = {
     # assumes same sop keys for all hosts.
     # this also works with agenix
-    sopsLookup = "my-network"; 
+    secretsLookup = "my-network"; 
     
     # assumes the same port for all hosts.
     listenPort = 51820;
@@ -69,7 +69,7 @@ EDITOR=emacs sops secrets/default.json
 ```
 
 
-- Step 4: add a field named matching the `sopsLookup` value, and insert the output of `wg genkey`.
+- Step 4: add a field named matching the `secretsLookup` value, and insert the output of `wg genkey`.
 
 Finally, add the following configuration to the host.
 
