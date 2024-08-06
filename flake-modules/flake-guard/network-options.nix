@@ -27,6 +27,16 @@ in {
       default = null;
     };
 
+    acmeProviderUri = lib.mkOption {
+      type = with types; nullOr str;
+      default = null;
+    };
+
+    acmeTrustedCertificateFiles = lib.mkOption {
+      types = with types; raw (listOf (either str path));
+      default = [];
+    };
+
     privateKeyFile = mkOption {
       type = types.nullOr types.str;
       default = null;

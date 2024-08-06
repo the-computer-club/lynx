@@ -22,9 +22,10 @@ inherit (import ./lib.nix)
 
 node-options = import ./node-options.nix args;
 network-options = import ./network-options.nix args;
-
 in
 {
+  config.flake.nixosModules.flake-guard-host = import ./nixos-module.nix config;
+
   options.wireguard = {
     secretsLookup.sops.enable = mkEnableOption ''
       enable looking up secrets via `sops.secrets ? <lookup>`.
@@ -80,14 +81,25 @@ in
           in
             ((peer //
             {
-              fqdns = lib.optionals (network.domainName != null && hosts != [] )
-                (map (h: "${h}.${network.domainName}" ) hosts );
-
               keyLookup = peer-name;
               hostname =
                 if peer.hostname == null
                 then peer-name
                 else peer.hostname;
+
+              fqdn =
+                if (peer.domainName != null && peer.hostname != null)
+                then "${peer.hostname}.${network.domainName}"
+                else null;
+
+              extraFqdn =
+                lib.optionals
+                  (peer.extraHostnames != [] && peer.domainName != null && peer.hostname != null)
+                  (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
+
+              domainName = mkGuardOpt "domainName";
+              acmeProviderUri = mkGuardOpt "acmeProviderUri";
+              acmeTrustedCertificateFiles = "acmeTrustedCertificateFile";
 
               hostsWriter = mkGuardOpt "hostsWriter";
               interfaceWriter = mkGuardOpt "interfaceWriter";

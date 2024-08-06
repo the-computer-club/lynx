@@ -2,11 +2,6 @@
 with lib;
 {
   options = {
-    fqdns = mkOption {
-      type = types.listOf types.str;
-      default = [];
-    };
-
     ipv6 = mkOption {
       type = types.listOf types.str;
       default = [];
@@ -94,6 +89,21 @@ with lib;
 
     groups = mkOption {
       type = types.listOf types.str;
+      default = [];
+    };
+
+    domainName = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    acmeProviderUri = lib.mkOption {
+      type = with types; nullOr str;
+      default = null;
+    };
+
+    acmeTrustedCertificateFiles = lib.mkOption {
+      types = with types; raw (listOf (either str path));
       default = [];
     };
   };
