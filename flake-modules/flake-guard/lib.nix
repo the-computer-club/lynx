@@ -10,7 +10,7 @@ rec {
 
   rmParent = attr:
     builtins.foldl' lib.recursiveUpdate {}
-      (lib.mapAttrsToList(k: v: v) attr);
+      ( lib.mapAttrsToList (k: v: v) attr );
 
   toIpv4Range = peers:
     map (peer:

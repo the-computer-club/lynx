@@ -1,9 +1,6 @@
-rootConfig: args@{ options, config, lib, pkgs, ... }:
+args@{ options, config, lib, pkgs, ... }:
 with lib;
 let
-  rootConfig = config.wireguard;
-  rootOptions = options;
-
   inherit (import ./lib.nix args)
     toIpv4
     toIpv4Range
@@ -28,18 +25,9 @@ let
   ;
   node-options = import ./node-options.nix args;
   network-options = import ./network-options.nix args;
+  settings-options = import ./settings.nix args;
+  cfg = config.flake-guard;
 
-  node-opts-internal.options =
-    node-options.options // {
-      fdqn = mkOption {
-        type = with types; nullOr str;
-        default = null;
-      };
-      extraFdqn = mkOption {
-        type = with types; listOf str;
-        default = [];
-      };
-    };
 in
 {
   imports = [
@@ -48,72 +36,80 @@ in
       [ "flake-guard" "networks" ])
   ];
 
+  # config.assertions = [
+  #   {
+  #     condition = builtins.all mapAttrsToList(k: v: (!v.found && v.autoConfig.interface)) config.flake-guard.networks;
+  #     message = "could not find self";
+  #   }
+
+  #   # {
+  #   #   condition = mapAttrsToList(k: v: (v.privateKeyFile != null && v.privateKey != null)) config.flake-guard.networks;
+  #   #   message = "privateKey & privateKeyFile are set";
+  #   # }
+  # ];
+
   options.flake-guard = {
     enable = mkEnableOption "enable flake-guard nixos module";
+
+    flake-parts = {
+      enable = mkEnable "built from flake-parts scope";
+      passthru = mkOption {
+        type = types.unspecified;
+        default = null;
+      };
+    };
 
     hostname = mkOption {
       type = types.str;
       default = config.networking.hostName;
     };
 
+    _loader-stub = mkOption {
+      type = types.functionTo (types.attrsOf
+        (types.submodule network-options)
+      );
+
+      default = (import ./stub.nix) lib;
+    };
+
+    defaults = mkOption {
+      type = (types.submodule setting-options);
+      default.autoConfig = {
+        "networking.wireguard.interfaces" = {
+          ips.enable = lib.mkDefault true;
+          privateKey.enable = lib.mkDefault true;
+          peers.enable = lib.mkDefault true;
+        };
+        "networking.hosts".Fqdns = lib.mkDefault true;
+      };
+    };
+
     networks = mkOption {
       default = {};
       type = types.attrsOf (types.submodule {
-        options = network-options.options // {
-          autoConfig = {
-            interface.enable = mkEnableOption "automatically generate the underlying network interface";
-            peers.enable = mkEnableOption "automatically generate the peers -- this will add all peers in the network to the interface.";
-            hosts.enable = mkEnableOption "automatically generate `etc.hostnames` enteries for each peer";
-          };
-
-          interfaceName = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-          };
-
-          interfaceWriter = mkOption {
-            type = types.enum [ "networking.wireguard.interfaces" ];
-            default = "networking.wireguard.interfaces";
-          };
-
-          hostsWriter = mkOption {
-            type = types.enum [ "networking.hosts" ];
-            default = "networking.hosts";
-          };
-
-          peers = {
-            by-name = mkOption {
-              type = types.attrsOf (types.submodule node-internal-opts);
-              default = {};
-            };
-
-            by-group = mkOption {
-              type = types.attrsOf types.attrOf node-internal-opts;
-              default = {};
-            };
-          };
-
-          _responsible = mkOption {
-            type = types.attrsOf types.bool;
-            default = [];
-          };
-
-          self = mkOption {
-            type = types.attrsOf types.unspecified;
-            default = {};
-          };
-        };
+        options = network-options.options;
       });
     };
   };
 
-  config.flake-guard.networks = mkIf config.flake-guard.enable
+  # user input / symmetric to flakeModule toplevel
+  config.flake-guard.networks =
+    mkIf cfg.flake-parts.enable
+      cfg.flake-parts.passthru;
+
+  # apply loader stub-loader onto data
+  config.flake-guard.build.stubbed =
+    cfg._stub-loader
+      cfg.networks;
+
+  # build network with `self` selected
+  config.flake-guard.build.networks = mkIf cfg.enable
     (mapAttrs (net-name: network:
       let
         _responsible =
           (mapAttrs (k: x:
-            k == config.flake-guard.hostname
-            || x.hostname == config.flake-guard.hostname
+            k == cfg.hostname
+            || x.hostname == cfg.hostname
           ) network.peers.by-name);
 
         self-name =
@@ -129,7 +125,7 @@ in
         peer-data = network.peers.by-name.${self-name};
 
         network-defaults = {
-          inherit (network) listenPort hostsWriter interfaceWriter;
+          inherit (network) listenPort autoConfig sops age;
         };
 
       in network // {
@@ -159,8 +155,9 @@ in
                    ))
                  else null;
            }));
-      }) rootConfig.build.networks);
+      }) cfg.build.stubbed);
 
+  # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
     mapAttrs
       (net-name: network:
@@ -181,41 +178,47 @@ in
               (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
           }
         )
-      ) config.flake-guard.networks;
+      ) cfg.build.networks;
 
+  # build the hostnames via
   config.networking.hosts =
     rmParent (mapAttrs (network-name: network:
       (mkIf
-        (network.autoConfig.hosts.enable && network.self.hostsWriter == "networking.hosts")
+        network.autoConfig."networking.hosts".enable
         (builtins.foldl' lib.recursiveUpdate {}
           (lib.mapAttrsToList
-            (k: peer:
-              builtins.foldl' lib.recursiveUpdate {}
-                (map (real-ip:
-                  let
-                    ip = builtins.head (builtins.split "/" real-ip);
-                  in
-                    { "${ip}" = [peer.hostname] ++ peer.extraHostnames; })
-                  (peer.ipv4 ++ peer.ipv6)
-                )
-            )
-            network.peers.by-name
+            (k: peer: builtins.foldl' lib.recursiveUpdate {}
+              (map (real-ip:
+                let
+                  ip = builtins.head (builtins.split "/" real-ip);
+                in
+                  { "${ip}" =
+                      (lib.optional peer.writeHostname.enable peer.hostname)
+                      ++ (lib.optionals peer.writeHostname.enable peer.extraHostnames)
+                      ++ (lib.optional (peer.writeFqdn.enable && peer.fqdn != null) peer.fqdn)
+                      ++ (lib.optional peer.writeFqdns.enable peer.extraFqdns);
+                  })
+                (peer.ipv4 ++ peer.ipv6)
+              )
+            ) network.peers.by-name
           )
         )
-      )
-    ) config.flake-guard.networks);
+      )) cfg.build.networks);
 
+
+  # NOTE: services.nginx.virtualHosts.<name>.enableACME will automatically fill in
+  # security.acme.certs
+  # ---
+  # build acme certs via
   config.security.acme.certs =
-    lib.mapAttrs
-      (network-name: network:
-        lib.mkIf network.self.acme.enable
-        (with network.self;
-          let domain = "${hostname}.${domainName}";
-          in {
-              domain = fqdn;
-              extraDomainNames = extraFqdn;
-              server = network.acme.uri;
-            }
-        )
-      ) config.flake-guard.networks;
+    (rmParent (lib.mapAttrs (network-name: network:
+      lib.mkIf network.self.autoConfig."security.acme.certs".enable
+      {
+        ${network.self.fqdn} = {
+          domain = network.self.fqdn;
+          extraDomainNames = network.self.extraFqdns;
+          server = network.autoConfig."security";
+        };
+      }) cfg.build.networks)
+    );
 }

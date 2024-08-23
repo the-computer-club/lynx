@@ -27,13 +27,15 @@ in {
       default = null;
     };
 
+    enableACME = mkEnableOption "enable acme";
+
     acmeProviderUri = lib.mkOption {
       type = with types; nullOr str;
       default = null;
     };
 
     acmeTrustedCertificateFiles = lib.mkOption {
-      types = with types; raw (listOf (either str path));
+      type = with types; (listOf (either str path));
       default = [];
     };
 
@@ -68,6 +70,34 @@ in {
       default = 51820;
     };
 
+    writeFqdns = mkOption {
+      type = types.enum [ null "networking.hosts" ];
+      default = "networking.hosts";
+    };
+
+    writeHostnames = mkOption {
+      type = types.enum [ null "networking.hosts" ];
+      default = "networking.hosts";
+    };
+
+    _responsible = mkOption {
+      type = types.attrsOf types.bool;
+      default = [];
+    };
+
+    settings = mkOption {
+      type = types.submodule setting-options;
+      default = {};
+    };
+
+    self = mkOption {
+      type = types.submodule {
+        options =
+          ({ found = mkEnableOption "self was found"; } // node-options.options);
+      };
+      default = {};
+    };
+
     # postUp = mkOption {
     #   type = types.nullOr types.str;
     #   default = null;
@@ -81,6 +111,11 @@ in {
     peers = {
       by-name = mkOption {
         type = types.attrsOf (types.submodule node-options);
+        default = {};
+      };
+
+      by-group = mkOption {
+        type = types.attrsOf (types.attrsOf (types.submodule node-options));
         default = {};
       };
     };

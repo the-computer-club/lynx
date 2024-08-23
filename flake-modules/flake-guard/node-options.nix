@@ -31,10 +31,6 @@ with lib;
       default = null;
     };
 
-    keyLookup = mkOption {
-      type = types.str;
-    };
-
     hostname = mkOption {
       description = ''
         This data is used to correlate peer information with the correct nixos-machine.
@@ -72,9 +68,24 @@ with lib;
       default = null;
     };
 
+    fqdn = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    extraFqdns = mkOption {
+      type = with types; listOf nonEmptyStr;
+      default = [];
+    };
+
+    keyLookup = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
     interfaceWriter = mkOption {
-        type = types.enum [ "networking.wireguard.interfaces" ];
-        default = "networking.wireguard.interfaces";
+      type = types.enum [ "networking.wireguard.interfaces" ];
+      default = "networking.wireguard.interfaces";
     };
 
     hostsWriter = mkOption {
@@ -97,13 +108,15 @@ with lib;
       default = null;
     };
 
+    enableACME = mkEnableOption "enable acme";
+
     acmeProviderUri = lib.mkOption {
       type = with types; nullOr str;
       default = null;
     };
 
     acmeTrustedCertificateFiles = lib.mkOption {
-      types = with types; raw (listOf (either str path));
+      type = with types; (listOf (either str path));
       default = [];
     };
   };

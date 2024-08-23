@@ -22,9 +22,17 @@ inherit (import ./lib.nix)
 
 node-options = import ./node-options.nix args;
 network-options = import ./network-options.nix args;
+
 in
 {
-  config.flake.nixosModules.flake-guard-host = import ./nixos-module.nix config;
+  config.flake.nixosModules = {
+    flake-guard-host = ./nixos-module.nix;
+
+    flake-guard-host-fp = {
+      flake-guard.flake-parts.enable = true;
+      flake-guard.flake-parts.passthru = config.wireguard.build.networks;
+    };
+  };
 
   options.wireguard = {
     secretsLookup.sops.enable = mkEnableOption ''
@@ -54,80 +62,19 @@ in
 
     build.networks = mkOption {
       default = {};
-      type = types.attrsOf (types.submodule {
-        options = (
-        lib.recursiveUpdate network-options.options
-        {
-          peers.by-group = mkOption {
-            type = types.attrsOf types.attrsOf (types.submodule node-options);
-            default = {};
-          };
-        });
-      });
+      type = types.attrsOf (types.submodule network-options);
+    };
+
+    _loader-stub = mkOption {
+      type = types.functionTo (types.attrsOf
+        (types.submodule network-options)
+      );
+
+      default = (import ./stub.nix) lib;
     };
   };
 
   config.wireguard.build.networks =
-    (mapAttrs (net-name: network:
-     let
-        by-name = mapAttrs (peer-name: peer:
-          let
-            mkGuardOpt = name:
-              if (peer.${name} != null)
-              then peer.${name}
-              else network.${name};
-
-            hosts = peer.extraHostnames ++ [peer.hostname];
-          in
-            ((peer //
-            {
-              keyLookup = peer-name;
-              hostname =
-                if peer.hostname == null
-                then peer-name
-                else peer.hostname;
-
-              fqdn =
-                if (peer.domainName != null && peer.hostname != null)
-                then "${peer.hostname}.${network.domainName}"
-                else null;
-
-              extraFqdn =
-                lib.optionals
-                  (peer.extraHostnames != [] && peer.domainName != null && peer.hostname != null)
-                  (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
-
-              domainName = mkGuardOpt "domainName";
-              acmeProviderUri = mkGuardOpt "acmeProviderUri";
-              acmeTrustedCertificateFiles = "acmeTrustedCertificateFile";
-
-              hostsWriter = mkGuardOpt "hostsWriter";
-              interfaceWriter = mkGuardOpt "interfaceWriter";
-              secretsLookup = mkGuardOpt "secretsLookup";
-              listenPort = mkGuardOpt "listenPort";
-              privateKeyFile = mkGuardOpt "privateKeyFile";
-            }))
-        ) network.peers.by-name;
-
-        by-group =
-          let
-            # first create flat list of all groups
-            all-groups = (lib.concatLists (mapAttrsToList(k: v: v.groups) by-name));
-            per-groups = lib.genAttrs all-groups
-              (group-name:
-                builtins.foldl' (s: x: lib.recursiveUpdate s { "${x.keyLookup}" = x;  })
-                  {}
-                  (lib.partition (p: builtins.elem group-name p.groups)
-                    (builtins.attrValues by-name)
-                  ).right
-              );
-          in
-            per-groups;
-      in
-        network // {
-          interfaceName = net-name;
-          peers.by-group = by-group;
-          peers.by-name = by-name;
-        }
-    ) config.wireguard.networks);
+    config.wireguard._loader-stub
+      config.wireguard.networks;
 }
