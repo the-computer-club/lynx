@@ -6,6 +6,7 @@ let
     toIpv4Range
     toPeer
     rmParent
+    composeNetwork
   ;
 
   inherit (lib)
@@ -20,103 +21,76 @@ let
     optionalString
     optionals
   ;
+
+
   inherit (builtins)
     mapAttrs
+    head
+    filters
+    foldl'
   ;
+
   node-options = import ./node-options.nix args;
   network-options = import ./network-options.nix args;
   settings-options = import ./settings.nix args;
-  cfg = config.flake-guard;
-
+  autoconfig-options = import ./autoconfig-options.nix args;
+  toplevel-options = import ./toplevel.nix args;
+  cfg = config.wireguard;
 in
 {
   imports = [
     (mkRenamedOptionModule
       [ "networking" "wireguard" "networks" ]
-      [ "flake-guard" "networks" ])
+      [ "wireguard" "networks" ])
+
+    (mkRenamedOptionModule
+      [ "flake-guard" "networks" ]
+      [ "wireguard" "networks" ])
   ];
 
-  # config.assertions = [
-  #   {
-  #     condition = builtins.all mapAttrsToList(k: v: (!v.found && v.autoConfig.interface)) config.flake-guard.networks;
-  #     message = "could not find self";
-  #   }
+  options.wireguard = recursiveUpdate toplevel-options.options {
+      enable = mkEnableOption "enable wireguard nixos module";
+      hostname = mkOption {
+        description = ''
+          configures `wireguard.networks.<network>.self`
+          from  `wireguard.networks.<network>.peers.by-name.<hostname>`
 
-  #   # {
-  #   #   condition = mapAttrsToList(k: v: (v.privateKeyFile != null && v.privateKey != null)) config.flake-guard.networks;
-  #   #   message = "privateKey & privateKeyFile are set";
-  #   # }
-  # ];
-
-  options.flake-guard = {
-    enable = mkEnableOption "enable flake-guard nixos module";
-
-    flake-parts = {
-      enable = mkEnable "built from flake-parts scope";
-      passthru = mkOption {
-        type = types.unspecified;
-        default = null;
+          This option is responsible for pairing this current configuration with the peer in the network.
+          The hostname should be equal to an attribute key inside of `<network>.peers.by-name`
+          '';
+        type = types.str;
+        default = config.networking.hostName;
       };
-    };
 
-    hostname = mkOption {
-      type = types.str;
-      default = config.networking.hostName;
-    };
+      build.composed = mkOption {
+        description =
+          ''
+          first stage of manipulating the input data. This data has all the defaults filled in,
+          and user preferences applied, but has not defined `self`.
+          '';
 
-    _loader-stub = mkOption {
-      type = types.functionTo (types.attrsOf
-        (types.submodule network-options)
-      );
-
-      default = (import ./stub.nix) lib;
-    };
-
-    defaults = mkOption {
-      type = (types.submodule setting-options);
-      default.autoConfig = {
-        "networking.wireguard.interfaces" = {
-          ips.enable = lib.mkDefault true;
-          privateKey.enable = lib.mkDefault true;
-          peers.enable = lib.mkDefault true;
-        };
-        "networking.hosts".Fqdns = lib.mkDefault true;
+        type = types.submodule network-options;
+        default = {};
       };
-    };
-
-    networks = mkOption {
-      default = {};
-      type = types.attrsOf (types.submodule {
-        options = network-options.options;
-      });
-    };
   };
 
-  # user input / symmetric to flakeModule toplevel
-  config.flake-guard.networks =
-    mkIf cfg.flake-parts.enable
-      cfg.flake-parts.passthru;
-
-  # apply loader stub-loader onto data
-  config.flake-guard.build.stubbed =
-    cfg._stub-loader
-      cfg.networks;
+  config.wireguard.build.composed =
+    (composeNetwork config.wireguard.networks);
 
   # build network with `self` selected
-  config.flake-guard.build.networks = mkIf cfg.enable
+  config.wireguard.build.networks = mkIf cfg.enable
     (mapAttrs (net-name: network:
       let
         _responsible =
-          (mapAttrs (k: x:
+          ((mapAttrs (k: x:
             k == cfg.hostname
             || x.hostname == cfg.hostname
-          ) network.peers.by-name);
+          ) network.peers.by-name));
 
         self-name =
           let
             names =
-              builtins.filter(p: p.val)
-                (lib.mapAttrsToList (k: v: {key=k; val=v;}) _responsible);
+              builtins.filter(p: p.val) (lib.mapAttrsToList (k: v: {key=k; val=v;}) _responsible);
           in
             if (builtins.length names) == 1
             then (builtins.head names).key
@@ -125,7 +99,7 @@ in
         peer-data = network.peers.by-name.${self-name};
 
         network-defaults = {
-          inherit (network) listenPort autoConfig sops age;
+          inherit (network) listenPort sops age;
         };
 
       in network // {
@@ -143,42 +117,41 @@ in
                      else null
                    ) ["sops" "age"];
                in
-                 if (self-name != null)
-                 then
-                   (builtins.head (builtins.filter (x: x == null)
-                     (map (x: if (x != null) then x else null) [
-                       peer-data.privateKeyFile
-                       network.privateKeyFile
-                       (deriveSecret peer-data.secretsLookup)
-                       (deriveSecret network.privateKeyFile)
-                     ])
-                   ))
-                 else null;
+                 head (filter (x: x == null)
+                   (map (x: if (x != null) then x else null) [
+                     peer-data.privateKeyFile
+                     network.privateKeyFile
+                     (deriveSecret peer-data.secretsLookup)
+                     (deriveSecret network.secretsLookup)
+                   ])
+                 );
            }));
-      }) cfg.build.stubbed);
+      }) cfg.build.composed);
 
   # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
-    mapAttrs
-      (net-name: network:
-        (mkIf (
-          network.autoConfig.interface.enable && network.self.found
-          && (network.self.interfaceWriter == "networking.wireguard.interfaces"))
-          {
-            inherit (network.self) listenPort;
+    mapAttrs (net-name: network:
+      (mkIf (network.self.found && network.autoConfig."networking.wireguard".enable) {
+        inherit (network.self) listenPort;
 
-            ips = lib.optionals (network.autoConfig.interface.enable)
-              (network.self.ipv4 ++ network.self.ipv6);
+        ips = optionals (network.autoConfig.interface.enable)
+          (network.self.ipv4 ++ network.self.ipv6);
 
-            privateKeyFile = network.self.privateKeyFile;
+        privateKeyFile =
+          if network.autoConfig.interface.enable
+          then network.self.privateKeyFile
+          else null;
 
-            privateKey = network.self.privateKey;
+        # Dont use this in production
+        privateKey =
+          if network.autoConfig.interface.enable
+          then network.self.privateKey
+          else null;
 
-            peers = lib.optionals network.autoConfig.peers.enable
-              (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
-          }
-        )
-      ) cfg.build.networks;
+        peers = lib.optionals network.autoConfig.peers.enable
+          (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
+      })
+    ) cfg.build.networks;
 
   # build the hostnames via
   config.networking.hosts =
@@ -188,37 +161,22 @@ in
         (builtins.foldl' lib.recursiveUpdate {}
           (lib.mapAttrsToList
             (k: peer: builtins.foldl' lib.recursiveUpdate {}
-              (map (real-ip:
-                let
-                  ip = builtins.head (builtins.split "/" real-ip);
-                in
-                  { "${ip}" =
-                      (lib.optional peer.writeHostname.enable peer.hostname)
-                      ++ (lib.optionals peer.writeHostname.enable peer.extraHostnames)
-                      ++ (lib.optional (peer.writeFqdn.enable && peer.fqdn != null) peer.fqdn)
-                      ++ (lib.optional peer.writeFqdns.enable peer.extraFqdns);
-                  })
-                (peer.ipv4 ++ peer.ipv6)
-              )
-            ) network.peers.by-name
-          )
+            (map (real-ip:
+              let
+                ip = builtins.head (builtins.split "/" real-ip);
+              in
+              lib.optionalAttr (!peer.ignoreHostname) {
+                "${ip}" =
+                  (lib.optionals
+                    network.autoConfig."networking.hosts".rawHosts.enable
+                    ([peer.hostname] ++ peer.extraHostnames)
+                  )
+                  ++ (lib.optional
+                    network.autoConfig."networking.hosts".FQDNs.enable
+                    ([peer.fqdn] ++ peer.extraFQDNs)
+                  );
+              }) (peer.ipv4 ++ peer.ipv6))
+            ) network.peers.by-name)
         )
       )) cfg.build.networks);
-
-
-  # NOTE: services.nginx.virtualHosts.<name>.enableACME will automatically fill in
-  # security.acme.certs
-  # ---
-  # build acme certs via
-  config.security.acme.certs =
-    (rmParent (lib.mapAttrs (network-name: network:
-      lib.mkIf network.self.autoConfig."security.acme.certs".enable
-      {
-        ${network.self.fqdn} = {
-          domain = network.self.fqdn;
-          extraDomainNames = network.self.extraFqdns;
-          server = network.autoConfig."security";
-        };
-      }) cfg.build.networks)
-    );
 }

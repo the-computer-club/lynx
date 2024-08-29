@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 {
-  flake.nixosModules.flake-guard-exceptions = ({config,lib, ...}:
+  flake.nixosModules.wireguard-exceptions = ({config,lib, ...}:
   {
     config.assertions = lib.mapAttrsToList (net-name: network: {
       condition = builtins.length (builtins.attrNames network.responsible) > 1;
@@ -10,32 +10,32 @@ with lib;
         ${builtins.concatStringSep "\n"
           (mapAttrs (k: peer:
           ''
-          flake-guard.networks.${net-name}.peers.${k}
-          flake-guard.networks.${net-name}.peers.${k}.hostname = "${peer.hostname}"
+          wireguard.networks.${net-name}.peers.${k}
+          wireguard.networks.${net-name}.peers.${k}.hostname = "${peer.hostname}"
           '') network.self.responsible)
          }
 
        this machine matches to:
-       - flake-guard.hostname => ${config.flake-guard.hostname}
-       - flake-guard.networks.${net-name}.self.hostname => ${config.flake-guard.networks.self.hostname}
+       - wireguard.hostname => ${config.wireguard.hostname}
+       - wireguard.networks.${net-name}.self.hostname => ${config.wireguard.networks.self.hostname}
 
-       [flake-guard]
+       [wireguard]
        multiple peers in ${net-name} are being matched with this host.
        To resolve this issue, only one peer must match with this host.
        '';
-    }) config.flake-guard.networks
+    }) config.wireguard.networks
     ++
 
     (lib.mapAttrsToList(net-name: network: {
       condition = !network.found && network.autoConfig.interface.enable;
 
       message = ''
-        `flake-guard.networks."${net-name}".self` cannot be found on this host.
+        `wireguard.networks."${net-name}".self` cannot be found on this host.
 
         no peers in `wireguard.networks."${net-name}".peers.by-name.<hostname>.<?hostname>`
-        match with `flake-guard.hostname = "${config.flake-guard.hostname}"`
+        match with `wireguard.hostname = "${config.wireguard.hostname}"`
 
-        flake-guard.networks."${net-name}".autoConfig.interface.enable cannot be used until resolved.
+        wireguard.networks."${net-name}".autoConfig.interface.enable cannot be used until resolved.
       '';
     } config.networking.wireguard.interfaces)
     ++
@@ -43,13 +43,13 @@ with lib;
       condition = (
         with network.autoConfig;
           interface.enable
-          && ! network.peers.by-name ? "${config.flake-guard.hostname}"
+          && ! network.peers.by-name ? "${config.wireguard.hostname}"
       );
       message = ''
-        no peers defined `flake-guard.networks.${net-name}.peers.by-name`
-        match with `flake-guard.lookupKey` (${config.flake-guard.hostname})
+        no peers defined `wireguard.networks.${net-name}.peers.by-name`
+        match with `wireguard.lookupKey` (${config.wireguard.hostname})
         in this configuration
       '';
-    }) config.flake-guard.networks));
+    }) config.wireguard.networks));
   });
 }

@@ -1,5 +1,8 @@
-{config, lib, ...}:
+args@{config, lib, ...}:
 with lib;
+let
+  autoconfig-options = import ./autoconfig-options.nix;
+in
 {
   options = {
     ipv6 = mkOption {
@@ -31,10 +34,18 @@ with lib;
       default = null;
     };
 
+    ignoreSharingHostname = mkEnableOption
+      "do not include this hostname in your /etc/hosts";
+
+    autoConfig = mkOption {
+      type = types.submodule autoconfig-options;
+      default = {};
+    };
+
     hostname = mkOption {
       description = ''
         This data is used to correlate peer information with the correct nixos-machine.
-        If both this option, and `flake-guard.networks.<<network>>.lookupKey` match values.
+        If both this option, and `wireguard.networks.<<network>>.lookupKey` match values.
         This peer configuration will be applied to that machine's interface.
 
         If this option is not set. This parent's key will be used instead.
@@ -73,24 +84,9 @@ with lib;
       default = null;
     };
 
-    extraFqdns = mkOption {
+    extraFQDNs = mkOption {
       type = with types; listOf nonEmptyStr;
       default = [];
-    };
-
-    keyLookup = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
-
-    interfaceWriter = mkOption {
-      type = types.enum [ "networking.wireguard.interfaces" ];
-      default = "networking.wireguard.interfaces";
-    };
-
-    hostsWriter = mkOption {
-      type = types.enum [ "networking.hosts" ];
-      default = "networking.hosts";
     };
 
     persistentKeepalive = mkOption {
@@ -106,18 +102,6 @@ with lib;
     domainName = mkOption {
       type = types.nullOr types.str;
       default = null;
-    };
-
-    enableACME = mkEnableOption "enable acme";
-
-    acmeProviderUri = lib.mkOption {
-      type = with types; nullOr str;
-      default = null;
-    };
-
-    acmeTrustedCertificateFiles = lib.mkOption {
-      type = with types; (listOf (either str path));
-      default = [];
     };
   };
 }

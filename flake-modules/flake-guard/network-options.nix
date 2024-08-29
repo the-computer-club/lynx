@@ -2,6 +2,7 @@ args@{ config, lib, ... }:
 with lib;
 let
 node-options = import ./node-options.nix args;
+autoconfig-options = import ./autoconfig-options.nix args;
 in {
   options = {
     secretsLookup = mkOption {
@@ -29,16 +30,6 @@ in {
 
     enableACME = mkEnableOption "enable acme";
 
-    acmeProviderUri = lib.mkOption {
-      type = with types; nullOr str;
-      default = null;
-    };
-
-    acmeTrustedCertificateFiles = lib.mkOption {
-      type = with types; (listOf (either str path));
-      default = [];
-    };
-
     privateKeyFile = mkOption {
       type = types.nullOr types.str;
       default = null;
@@ -54,39 +45,14 @@ in {
       default = null;
     };
 
-    interfaceWriter = mkOption {
-      type = types.enum [ "networking.wireguard.interfaces" ];
-      default = "networking.wireguard.interfaces";
-    };
-
-    hostsWriter = mkOption {
-      type = types.enum [ "networking.hosts" ];
-      default = "networking.hosts";
-    };
-
     listenPort = mkOption {
       description = '' default port for the network '';
       type = types.nullOr types.port;
       default = 51820;
     };
 
-    writeFqdns = mkOption {
-      type = types.enum [ null "networking.hosts" ];
-      default = "networking.hosts";
-    };
-
-    writeHostnames = mkOption {
-      type = types.enum [ null "networking.hosts" ];
-      default = "networking.hosts";
-    };
-
     _responsible = mkOption {
       type = types.attrsOf types.bool;
-      default = [];
-    };
-
-    settings = mkOption {
-      type = types.submodule setting-options;
       default = {};
     };
 
@@ -118,6 +84,16 @@ in {
         type = types.attrsOf (types.attrsOf (types.submodule node-options));
         default = {};
       };
+    };
+
+    autoConfig = mkOption {
+      type = (types.submodule autoconfig-options);
+      default = {};
+    };
+
+    metadata.acmeServer = mkOption {
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
     };
   };
 }

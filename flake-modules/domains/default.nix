@@ -22,7 +22,7 @@
       domains."hello-world".modules = [
         ({inputs, config, lib, ...}: {
           systems = ["x86_64-linux"];
-          imports = [ inputs.lynx.flakeModules.flake-guard ];
+          imports = [ inputs.lynx.flakeModules.wireguard ];
 
           wireguard.enable = true;
           wireguard.networks.vxlan = {

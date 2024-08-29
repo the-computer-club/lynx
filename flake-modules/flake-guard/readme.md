@@ -1,4 +1,4 @@
-# flake-guard
+# wireguard
 
 flake guard allows you to define your wireguard network once, and use it across multiple `nixosConfiguration` fields.
 
@@ -8,7 +8,7 @@ flake guard allows you to define your wireguard network once, and use it across 
 # flake-module
 { config, lib, inputs, ... }:
 {
-  imports = [ inputs.lynx.flakeModules.flake-guard ];
+  imports = [ inputs.lynx.flakeModules.wireguard ];
 
   wireguard.networks.my-network = {
     # assumes same sop keys for all hosts.
@@ -20,7 +20,7 @@ flake guard allows you to define your wireguard network once, and use it across 
     
     peers.by-name = { #
       # WARNING: networking.hostName = "host1"; 
-      # must match `host1 = ...` for `autoConfig` to work. (flake-guard-host)
+      # must match `host1 = ...` for `autoConfig` to work. (wireguard-host)
       host1 = {
         publicKey = "g72lA+Jsvp7ZEmXQGpJCrzMVrorSTjr6/kbD9aaLyX0=";
             ipv4 = [ "172.16.0.1/32" ];
@@ -79,7 +79,7 @@ let
   net = config.networking.wireguard.networks;
 in
 {
-  imports = [ self.nixosModules.flake-guard-host ];
+  imports = [ self.nixosModules.wireguard-host ];
   
   sops.secrets.my-network.mode = "0400";
   networking.firewall.interfaces = {
