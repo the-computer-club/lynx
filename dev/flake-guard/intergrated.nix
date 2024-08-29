@@ -1,17 +1,15 @@
 { config, lib, pkgs, ... }:
-let cfg = config.wireguard.networks.testnet.self;
+let net = config.wireguard.networks.testnet;
 in {
-
-  wireguard.networks.self.autoConfig.enableACME = lib.mkForce false;
-
   security.acme = {
     acceptTerms = true;
     defaults.email = "integrated@example.org";
+    defaults.server = net.metadata.acmeServer;
   };
 
   services.nginx = {
     enable = true;
-    virtualHosts.${cfg.fqdn} = {
+    virtualHosts.${net.self.fqdn} = {
       forceSSL = true;
       enableACME = true;
     };

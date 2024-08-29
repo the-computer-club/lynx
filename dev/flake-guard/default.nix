@@ -7,6 +7,18 @@ in {
     ./network.nix
   ];
 
+  flake.nixosConfigurations.acme = inputs.nixpkgs.lib.nixosSystem {
+    system = "x86_64-linux";
+    modules = [
+      # config.flake.nixosModules.flake-guard-host
+      {
+        wireguard.enable = true;
+        wireguard.hostname = "acme";
+        networking.hostName = "acme";
+      }
+    ];
+  };
+
   perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
   {
     packages.flake-guard-test =
@@ -25,19 +37,26 @@ in {
             --ca-key $out/root_ca.key
         '';
 
+
+
         common = {config, ...}: {
+          imports = [
+            inputs.lynx.nixosModules.flake-guard-host
+          ];
+
+          wireguard.enable = true;
+          wireguard.networks = rootConfig.wireguard.networks;
+
           security.pki.certificateFiles = [ "${test-certificates}/root_ca.crt" ];
           networking.firewall.allowedUDPPorts = [
             51820
             #config.flake-guard.networks.testnet.self.listenPort
-
           ];
         };
 
         open-server.networking.firewall.allowedTCPPorts = [ 443 ];
         hidden-server.networking.firewall.interfaces.testnet.allowedTCPPorts = [ 443 ];
 
-        inherit (rootConfig.flake.nixosModules) flake-guard-host;
 
       in
       (pkgs.nixosTest {
@@ -45,7 +64,6 @@ in {
         nodes = {
           acme.imports = [
             common
-            flake-guard-host
             ./acme-server.nix
             { services.step-ca = {
                 intermediatePasswordFile = "${test-certificates}/intermediate-password-file";
@@ -61,20 +79,17 @@ in {
           nginx.imports = [
             common
             open-server
-            flake-guard-host
             ./nginx.nix
           ];
 
           caddy.imports = [
             common
             open-server
-            flake-guard-host
             ./caddy.nix
           ];
 
           userclient.imports = [
             common
-            flake-guard-host
           ];
         };
 
@@ -92,6 +107,7 @@ in {
             caddy.wait_for_unit("default.target")
 
             acme.succeed("ping -c 3 nginx")
+
             acme.succeed("ping -c 3 caddy")
 
             nginx.succeed("ping -c 3 acme")

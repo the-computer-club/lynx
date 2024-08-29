@@ -34,7 +34,7 @@ in
       default = null;
     };
 
-    ignoreSharingHostname = mkEnableOption
+    ignoreHostname = mkEnableOption
       "do not include this hostname in your /etc/hosts";
 
     autoConfig = mkOption {

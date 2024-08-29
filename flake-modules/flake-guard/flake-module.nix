@@ -11,10 +11,10 @@ let
   ;
 
   toplevel-options = (import ./toplevel.nix args);
+  nixos-flake-guard = inputs.lynx.nixosModules.flake-guard-host;
 in
 {
   config.flake.nixosModules.flake-guard-host = {
-    imports = [ inputs.lynx.nixosModules.flake-guard-host ];
     wireguard = config.wireguard;
   };
 

@@ -58,14 +58,6 @@
         lynx.nixosModules.globals
       ];
 
-      flake.nixosConfigurations.flake-guard-test = inputs.nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          self.nixosModules.flake-guard-host
-          self.nixosModules.test-flake-guard-host
-          { flake-guard.hostname = "node1"; }
-        ];
-      };
 
       flake._config = config;
 

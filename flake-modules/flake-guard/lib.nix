@@ -60,26 +60,27 @@ rec {
              "secretsLookup"
              "privateKeyFile"
            ];
+           hostname =
+             if peer.hostname == null
+             then peer-name
+             else peer.hostname;
          in
            (peer // new-data //
            {
-              hostname =
-                if peer.hostname == null
-                then peer-name
-                else peer.hostname;
+              inherit hostname;
 
               fqdn =
-                if (mkNodeOpt "domainName") != null && peer.hostname != null
-                then "${peer.hostname}.${network.domainName}"
+                if ( lib.traceValSeqN 3 ((mkNodeOpt "domainName") != null && hostname != null))
+                then "${hostname}.${network.domainName}"
                 else null;
 
               extraFQDNs =
                 optionals
-                  (peer.extraHostnames != [] && peer.domainName != null && peer.hostname != null)
+                  (peer.extraHostnames != [] && peer.domainName != null && hostname != null)
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
               autoConfig = network.autoConfig // peer.autoConfig;
-           })) (lib.traceValSeqN 5 network).peers.by-name;
+           })) network.peers.by-name;
 
         by-group =
           let

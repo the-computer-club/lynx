@@ -3,16 +3,19 @@
     listenPort = 51820;
     domainName = "vpn";
 
+    metadata.acmeServer = "https://acme:8443/acme/testnet/directory";
+
     autoConfig = {
       "networking.wireguard" = {
         interface.enable = true;
         peers.mesh.enable = true;
       };
 
-      "networking.hosts".FQDNs.enable = true;
+      "networking.hosts" = {
+        enable = true;
+        FQDNs.enable = true;
+      };
     };
-
-    metadata.acmeServer = "https://acme:8443/acme/testnet/directory";
 
     peers.by-name = {
       acme = {

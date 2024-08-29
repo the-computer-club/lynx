@@ -29,9 +29,9 @@ let
     filters
     foldl'
   ;
-
-  node-options = import ./node-options.nix args;
   network-options = import ./network-options.nix args;
+  node-options = import ./node-options.nix args;
+
   settings-options = import ./settings.nix args;
   autoconfig-options = import ./autoconfig-options.nix args;
   toplevel-options = import ./toplevel.nix args;
@@ -69,7 +69,7 @@ in
           and user preferences applied, but has not defined `self`.
           '';
 
-        type = types.submodule network-options;
+        type = types.attrsOf (types.submodule network-options);
         default = {};
       };
   };
@@ -99,7 +99,7 @@ in
         peer-data = network.peers.by-name.${self-name};
 
         network-defaults = {
-          inherit (network) listenPort sops age;
+          inherit (network) listenPort; #sops age;
         };
 
       in network // {
@@ -107,7 +107,7 @@ in
         self = (mkIf (self-name != null)
           ((peer-data // network-defaults) //
            {
-             found = true;
+             found = lib.mkForce true;
              privateKeyFile =
                let
                  deriveSecret = lookup:
@@ -131,24 +131,16 @@ in
   # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
     mapAttrs (net-name: network:
-      (mkIf (network.self.found && network.autoConfig."networking.wireguard".enable) {
-        inherit (network.self) listenPort;
+      (mkIf (network.self.found && network.autoConfig."networking.wireguard".interface.enable) {
+        inherit (network.self)
+          listenPort
+          privateKey
+          privateKeyFile;
 
-        ips = optionals (network.autoConfig.interface.enable)
-          (network.self.ipv4 ++ network.self.ipv6);
+        ips = with network.self; ipv4 ++ ipv6;
 
-        privateKeyFile =
-          if network.autoConfig.interface.enable
-          then network.self.privateKeyFile
-          else null;
-
-        # Dont use this in production
-        privateKey =
-          if network.autoConfig.interface.enable
-          then network.self.privateKey
-          else null;
-
-        peers = lib.optionals network.autoConfig.peers.enable
+        peers = lib.optionals
+          network.autoConfig."networking.wireguard".peers.mesh.enable
           (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
       })
     ) cfg.build.networks;
@@ -159,24 +151,23 @@ in
       (mkIf
         network.autoConfig."networking.hosts".enable
         (builtins.foldl' lib.recursiveUpdate {}
-          (lib.mapAttrsToList
-            (k: peer: builtins.foldl' lib.recursiveUpdate {}
+          (lib.mapAttrsToList (k: peer: builtins.foldl' lib.recursiveUpdate {}
             (map (real-ip:
               let
                 ip = builtins.head (builtins.split "/" real-ip);
               in
-              lib.optionalAttr (!peer.ignoreHostname) {
+              lib.optionalAttrs (!peer.ignoreHostname) {
                 "${ip}" =
                   (lib.optionals
-                    network.autoConfig."networking.hosts".rawHosts.enable
+                    network.autoConfig."networking.hosts".names.enable
                     ([peer.hostname] ++ peer.extraHostnames)
-                  )
-                  ++ (lib.optional
+                  ) ++
+                  (lib.optional
                     network.autoConfig."networking.hosts".FQDNs.enable
                     ([peer.fqdn] ++ peer.extraFQDNs)
                   );
-              }) (peer.ipv4 ++ peer.ipv6))
-            ) network.peers.by-name)
+              }) (peer.ipv4 ++ peer.ipv6)
+            )) network.peers.by-name)
         )
       )) cfg.build.networks);
 }

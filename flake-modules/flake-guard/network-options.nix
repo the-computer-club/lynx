@@ -28,8 +28,6 @@ in {
       default = null;
     };
 
-    enableACME = mkEnableOption "enable acme";
-
     privateKeyFile = mkOption {
       type = types.nullOr types.str;
       default = null;

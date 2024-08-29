@@ -11,6 +11,7 @@
     };
 
     nixosModules = {
+      flake-guard-host = ./flake-modules/flake-guard/nixos-module.nix;
       globals = ./nixos-modules/globals.nix;
       fs.zfs = {
         encrypted-ephemeral = ./nixos-modules/fs/zfs/encrypted-ephemeral.nix;
