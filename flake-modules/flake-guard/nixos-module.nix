@@ -162,7 +162,7 @@ in
                     network.autoConfig."networking.hosts".names.enable
                     ([peer.hostname] ++ peer.extraHostnames)
                   ) ++
-                  (lib.optional
+                  (lib.optionals
                     network.autoConfig."networking.hosts".FQDNs.enable
                     ([peer.fqdn] ++ peer.extraFQDNs)
                   );

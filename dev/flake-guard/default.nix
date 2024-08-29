@@ -1,7 +1,6 @@
 {inputs, config, self, ...}:
 let rootConfig = config;
 in {
-
   imports = [
     inputs.lynx.flakeModules.flake-guard
     ./network.nix
@@ -37,8 +36,6 @@ in {
             --ca-key $out/root_ca.key
         '';
 
-
-
         common = {config, ...}: {
           imports = [
             inputs.lynx.nixosModules.flake-guard-host
@@ -55,9 +52,6 @@ in {
         };
 
         open-server.networking.firewall.allowedTCPPorts = [ 443 ];
-        hidden-server.networking.firewall.interfaces.testnet.allowedTCPPorts = [ 443 ];
-
-
       in
       (pkgs.nixosTest {
         name = "flake-guard-host-test";
