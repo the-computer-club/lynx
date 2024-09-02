@@ -40,7 +40,7 @@ in {
         {
           imports = [inputs.lynx.nixosModules.flake-guard-host];
           wireguard.enable = true;
-          wireguard.autoConfig.openFirewall = true;
+          wireguard.defaults.autoConfig.openFirewall = true;
           wireguard.networks = rootConfig.wireguard.networks;
 
           security.pki.certificateFiles = [ "${test-certificates}/root_ca.crt" ];

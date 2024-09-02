@@ -1,6 +1,8 @@
 { config, lib, ... }:
 let
   inherit (lib)
+    mapAttrs'
+    nameValuePair
     mapAttrs
     mapAttrsToList
     partition
@@ -28,6 +30,12 @@ rec {
     endpoint = p.selfEndpoint;
   };
 
+  toRosenPeer = p: {
+    device = p.interfaceName;
+    peer = p.publicKey;
+    endpoint = p.selfEndpoint;
+  };
+
   rmParent = attr:
     foldl' recursiveUpdate {}
       ( mapAttrsToList (k: v: v) attr );
@@ -45,8 +53,13 @@ rec {
   toIpv4 = ip: head (splitString "/" ip);
 
   composeNetwork =
-    mapAttrs (net-name: network:
+    mapAttrs' (net-name: network:
      let
+       interfaceName =
+         if network.interfaceName != null
+         then network.interfaceName
+         else net-name;
+
        by-name = mapAttrs (peer-name: peer:
          let
            mkNodeOpt = name:
@@ -56,11 +69,13 @@ rec {
 
            inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
            new-data = inheritedAttrs [
+             "interfaceName"
              "listenPort"
              "domainName"
              "secretsLookup"
              "privateKeyFile"
            ];
+
            hostName =
              if peer.hostName == null
              then peer-name
@@ -96,10 +111,12 @@ rec {
           in
             per-groups;
       in
-        network // {
-          interfaceName = net-name;
-          peers.by-group = by-group;
-          peers.by-name = by-name;
-        }
+        nameValuePair
+        interfaceName
+          (network // {
+            inherit interfaceName;
+            peers.by-group = by-group;
+            peers.by-name = by-name;
+          })
     );
 }

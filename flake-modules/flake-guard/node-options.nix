@@ -42,7 +42,7 @@ in
       default = {};
     };
 
-    hostname = mkOption {
+    hostName = mkOption {
       description = ''
         This data is used to correlate peer information with the correct nixos-machine.
         If both this option, and `wireguard.networks.<<network>>.lookupKey` match values.
@@ -102,6 +102,11 @@ in
     domainName = mkOption {
       type = types.nullOr types.str;
       default = null;
+    };
+
+    interfaceName = mkOption {
+      type = types.str;
+      internal = true;
     };
   };
 }

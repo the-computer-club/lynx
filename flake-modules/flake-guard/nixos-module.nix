@@ -28,12 +28,13 @@ let
     filters
     foldl'
   ;
+
   network-options = import ./network-options.nix args;
   node-options = import ./node-options.nix args;
-
   settings-options = import ./settings.nix args;
   autoconfig-options = import ./autoconfig-options.nix args;
   toplevel-options = import ./toplevel.nix args;
+
   cfg = config.wireguard;
 in
 {
@@ -151,6 +152,20 @@ in
           (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
       })
     ) cfg.build.networks;
+
+  config.services.rosenpass.settings =
+    mapAttrs(net-name: network:
+      (mkIf cfg.autoConfig."rosenpass".enable {
+
+        public_key = network.self.publicKey;
+        secret_key = network.self.privateKeyFile;
+        endpoint = network.self.selfEndpoint;
+
+        settings.peers = lib.optionals
+          network.autoConfig."rosenpass.peers".peers.mesh.enable
+          (lib.mapAttrsToList (k: v: toRosenPeer v) network.peers.by-name);
+      })
+    ) config.wireguard.build.networks;
 
   # build the hostnames via
   config.networking.hosts =

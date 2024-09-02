@@ -2,7 +2,7 @@
 with lib;
 {
   options = {
-    openFirewall.enable = mkEnableOption "automatically open the firewall";
+    openFirewall = mkEnableOption "automatically open the firewall";
 
     "networking.wireguard" = {
       interface.enable = mkEnableOption "setup ips & privateKey";
