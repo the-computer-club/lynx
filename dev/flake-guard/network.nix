@@ -25,11 +25,11 @@
         selfEndpoint = "acme:51820";
       };
 
-      client = {
+      nginx = {
         ipv4 = ["172.16.169.2/32"];
         publicKey = "hvoRk9k84yYcThG2qwilWuBQUJpBrgMs6dMBg7PD2Qc=";
         privateKey = "CHyebeznokFGkyo2WYWZWzdgWTug8wHnZjjsgsxFFlY=";
-        selfEndpoint = "client:51820";
+        selfEndpoint = "nginx:51820";
       };
 
       caddy = {
@@ -39,11 +39,11 @@
         selfEndpoint = "caddy:51820";
       };
 
-      tester = {
+      userclient = {
         ipv4 = ["172.16.169.4/32"];
         publicKey = "4j2NKmVgE/3iCcFbmtq6Pmvz8HDShI+jRlkEdDmKjmk=";
         privateKey = "yCX0xVDvnIhhFuo/xehG16IS1nKaNMT7cI5YIxwMGXs=";
-        selfEndpoint = "tester:51820";
+        selfEndpoint = "userclient:51820";
       };
     };
   };

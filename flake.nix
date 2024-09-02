@@ -19,5 +19,6 @@
       };
     };
     lib = ./lib.nix;
+    recipesPath = ./recipes;
   };
 }

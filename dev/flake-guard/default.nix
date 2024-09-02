@@ -36,14 +36,11 @@ in {
             --ca-key $out/root_ca.key
         '';
 
-        common = {config, ...}: {
-          imports = [
-            inputs.lynx.nixosModules.flake-guard-host
-          ];
-
+        common = {config, ...}:
+        {
+          imports = [inputs.lynx.nixosModules.flake-guard-host];
           wireguard.enable = true;
           wireguard.networks = rootConfig.wireguard.networks;
-
           security.pki.certificateFiles = [ "${test-certificates}/root_ca.crt" ];
           networking.firewall.allowedUDPPorts = [
             51820
@@ -60,6 +57,7 @@ in {
             common
             ./acme-server.nix
             { services.step-ca = {
+                enable = true;
                 intermediatePasswordFile = "${test-certificates}/intermediate-password-file";
                 settings = {
                   root = "${test-certificates}/root_ca.crt";
@@ -82,9 +80,7 @@ in {
             ./caddy.nix
           ];
 
-          userclient.imports = [
-            common
-          ];
+          userclient.imports = [common];
         };
 
         testScript = ''
@@ -101,7 +97,6 @@ in {
             caddy.wait_for_unit("default.target")
 
             acme.succeed("ping -c 3 nginx")
-
             acme.succeed("ping -c 3 caddy")
 
             nginx.succeed("ping -c 3 acme")
@@ -132,6 +127,7 @@ in {
             acme.wait_for_unit("step-ca.service")
 
             nginx.wait_for_unit("acme-finished-nginx.target")
+
             userclient.succeed("curl https://nginx/ | grep \"Welcome to nginx!\"")
             userclient.succeed("curl https://nginx.vpn/ | grep \"Welcome to nginx!\"")
 

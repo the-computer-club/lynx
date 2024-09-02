@@ -56,6 +56,7 @@ rec {
 
            inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
            new-data = inheritedAttrs [
+             "listenPort"
              "domainName"
              "secretsLookup"
              "privateKeyFile"
@@ -70,7 +71,7 @@ rec {
               inherit hostname;
 
               fqdn =
-                if ( lib.traceValSeqN 3 ((mkNodeOpt "domainName") != null && hostname != null))
+                if ((mkNodeOpt "domainName") != null && hostname != null)
                 then "${hostname}.${network.domainName}"
                 else null;
 

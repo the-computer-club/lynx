@@ -1,4 +1,4 @@
-args@{ inputs, options, config, lib, ... }:
+args@{ self, inputs, options, config, lib, ... }:
 let
   inherit (lib)
     mkOption
@@ -11,10 +11,11 @@ let
   ;
 
   toplevel-options = (import ./toplevel.nix args);
-  nixos-flake-guard = inputs.lynx.nixosModules.flake-guard-host;
+  inherit (inputs.lynx.nixosModules) flake-guard-host;
 in
 {
   config.flake.nixosModules.flake-guard-host = {
+    imports = [ flake-guard-host ];
     wireguard = config.wireguard;
   };
 

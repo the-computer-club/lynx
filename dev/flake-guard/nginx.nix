@@ -13,12 +13,12 @@
   services.nginx = {
     enable = true;
 
-    virtualHosts."client.vpn" = {
+    virtualHosts."nginx.vpn" = {
       forceSSL = true;
       enableACME = true;
     };
 
-    virtualHosts."client" = {
+    virtualHosts."nginx" = {
       forceSSL = true;
       enableACME = true;
     };

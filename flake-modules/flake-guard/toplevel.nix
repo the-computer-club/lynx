@@ -3,6 +3,9 @@ with lib;
 let
   network-options = import ./network-options.nix args;
   autoconfig-options = import ./autoconfig-options.nix args;
+
+  inherit (import ./lib.nix args)
+    composeNetwork;
 in
 {
   options = {
