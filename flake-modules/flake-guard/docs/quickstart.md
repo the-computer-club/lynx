@@ -8,8 +8,10 @@ this allows you to define your wireguard network once, and use it across multipl
 
 <details>
 <summary><b>1. Install Flake-guard</b></summary>
-## Install Flake-guard
+
+
 ## [Flakes](https://wiki.nixos.org/wiki/Flakes)
+
 ```
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs";
@@ -29,7 +31,10 @@ this allows you to define your wireguard network once, and use it across multipl
   };
 }
 ```
+
+
 ## [Flake-parts](https://flake.parts/)
+
 ```
 {
   inputs.lynx.url = "github:the-computer-club/lynx";
