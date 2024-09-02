@@ -12,7 +12,7 @@ this allows you to define your wireguard network once, and use it across multipl
 
 ## [Flakes](https://wiki.nixos.org/wiki/Flakes)
 
-```
+```nix
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs";
   inputs.parts.url = "github:hercules-ci/flake-parts";
@@ -35,7 +35,7 @@ this allows you to define your wireguard network once, and use it across multipl
 
 ## [Flake-parts](https://flake.parts/)
 
-```
+```nix
 {
   inputs.lynx.url = "github:the-computer-club/lynx";
   
@@ -267,8 +267,6 @@ in
 
 ### By-group
 
-```nix
-### Customizing topology.
 ```nix
 {config, lib, pkgs, ...}:
 let 
