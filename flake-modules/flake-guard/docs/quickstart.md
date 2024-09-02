@@ -147,13 +147,6 @@ Usage outside those means may result in damages.
 
 
 ## Define your network.
----
-
-
-> [!TIP]
-> This portion is normally defined in the nixos-module system. With the inclusion of flake-parts, 
-> one may also define the network inside the flake-parts module system. The options are identical.
-
 Define your network as such.
 
 ```nix
