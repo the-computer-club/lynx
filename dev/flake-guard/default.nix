@@ -40,11 +40,12 @@ in {
         {
           imports = [inputs.lynx.nixosModules.flake-guard-host];
           wireguard.enable = true;
+          wireguard.autoConfig.openFirewall = true;
           wireguard.networks = rootConfig.wireguard.networks;
+
           security.pki.certificateFiles = [ "${test-certificates}/root_ca.crt" ];
           networking.firewall.allowedUDPPorts = [
             51820
-            #config.flake-guard.networks.testnet.self.listenPort
           ];
         };
 

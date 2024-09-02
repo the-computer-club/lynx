@@ -61,23 +61,23 @@ rec {
              "secretsLookup"
              "privateKeyFile"
            ];
-           hostname =
-             if peer.hostname == null
+           hostName =
+             if peer.hostName == null
              then peer-name
-             else peer.hostname;
+             else peer.hostName;
          in
            (peer // new-data //
            {
-              inherit hostname;
+              inherit hostName;
 
               fqdn =
-                if ((mkNodeOpt "domainName") != null && hostname != null)
-                then "${hostname}.${network.domainName}"
+                if ((mkNodeOpt "domainName") != null && hostName != null)
+                then "${hostName}.${network.domainName}"
                 else null;
 
               extraFQDNs =
                 optionals
-                  (peer.extraHostnames != [] && peer.domainName != null && hostname != null)
+                  (peer.extraHostnames != [] && peer.domainName != null && hostName != null)
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
               autoConfig = network.autoConfig // peer.autoConfig;

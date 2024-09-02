@@ -22,7 +22,6 @@ let
     optionals
   ;
 
-
   inherit (builtins)
     mapAttrs
     head
@@ -49,29 +48,29 @@ in
   ];
 
   options.wireguard = recursiveUpdate toplevel-options.options {
-      enable = mkEnableOption "enable wireguard nixos module";
-      hostname = mkOption {
-        description = ''
-          configures `wireguard.networks.<network>.self`
-          from  `wireguard.networks.<network>.peers.by-name.<hostname>`
+    enable = mkEnableOption "enable wireguard nixos module";
+    hostName = mkOption {
+      description = ''
+        configures `wireguard.networks.<network>.self`
+        from  `wireguard.networks.<network>.peers.by-name.<hostname>`
 
-          This option is responsible for pairing this current configuration with the peer in the network.
-          The hostname should be equal to an attribute key inside of `<network>.peers.by-name`
-          '';
-        type = types.str;
-        default = config.networking.hostName;
-      };
+        This option is responsible for pairing this current configuration with the peer in the network.
+        The hostname should be equal to an attribute key inside of `<network>.peers.by-name`
+        '';
+      type = types.str;
+      default = config.networking.hostName;
+    };
 
-      build.composed = mkOption {
-        description =
-          ''
-          first stage of manipulating the input data. This data has all the defaults filled in,
-          and user preferences applied, but has not defined `self`.
-          '';
+    build.composed = mkOption {
+      description =
+        ''
+        first stage of manipulating the input data. This data has all the defaults filled in,
+        and user preferences applied, but has not defined `self`.
+        '';
 
-        type = types.attrsOf (types.submodule network-options);
-        default = {};
-      };
+      type = types.attrsOf (types.submodule network-options);
+      default = {};
+    };
   };
 
   config.wireguard.build.composed =
@@ -83,8 +82,8 @@ in
       let
         _responsible =
           ((mapAttrs (k: x:
-            k == cfg.hostname
-            || x.hostname == cfg.hostname
+            k == cfg.hostName
+            || x.hostName == cfg.hostName
           ) network.peers.by-name));
 
         self-name =
@@ -123,10 +122,18 @@ in
                      network.privateKeyFile
                      (deriveSecret peer-data.secretsLookup)
                      (deriveSecret network.secretsLookup)
+                     (deriveSecret net-name)
                    ])
                  );
            }));
       }) cfg.build.composed);
+
+  config.networking.firewall.allowedUDPPorts =
+    lib.concatLists
+      (mapAttrsToList(net-name: network: lib.optionals
+        (network.self.listenPort != null && network.autoConfig.openFirewall)
+        [ network.self.listenPort ]
+      ) config.wireguard.build.networks);
 
   # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
@@ -160,7 +167,7 @@ in
                 "${ip}" =
                   (lib.optionals
                     network.autoConfig."networking.hosts".names.enable
-                    ([peer.hostname] ++ peer.extraHostnames)
+                    ([peer.hostName] ++ peer.extraHostnames)
                   ) ++
                   (lib.optionals
                     network.autoConfig."networking.hosts".FQDNs.enable

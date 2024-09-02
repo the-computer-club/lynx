@@ -2,6 +2,8 @@
 with lib;
 {
   options = {
+    openFirewall.enable = mkEnableOption "automatically open the firewall";
+
     "networking.wireguard" = {
       interface.enable = mkEnableOption "setup ips & privateKey";
       peers.mesh.enable = mkEnableOption "write all peers from the `<network>.peers.by-name` into the interface";
