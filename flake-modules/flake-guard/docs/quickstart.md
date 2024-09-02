@@ -56,30 +56,41 @@ this allows you to define your wireguard network once, and use it across multipl
 
 <details>
 <summary><b>2. Setting up secrets</b></summary>
-# wireguard
+
+## Setting up secrets
+
 > [!TIP]
 > It is a common strategy to generate a wireguard key for each host, and then reference them all the same under the same namespace. Under each nixos-module context, the underlying value evaluates to a different secret.
 > The examples below also follow this strategy.
 > If not specified, flake-guard assumes the network name as the `secretsLookup` as a last-shot effort.
 
+
+---
 #### Secrets Backends supported are
+
 - [agenix](https://github.com/ryantm/agenix)
 - [sops-nix](https://github.com/Mic92/sops-nix)
 - `privateKeyFile`
 - `privateKey` (For testing purposes only)
 
+
 The field `secretsLookup` will be used to evaluate `config.<secretsBackend>.secrets.<secretsLookup>`.
 upon each host that loads `lynx.nixosModules.flake-guard-host`.
+
 
 - `wireguard.networks.<NETWORK>.secretsLookup`
 - `wireguard.networks.<NETWORK>.peers.by-name.<HOSTNAME>.secretsLookup`
 
+
 Now create secrets for each nixosConfiguration this network is involved with.
+
 
 Generate an encrypted secret for every host in the network, following the template below, add the following code to your project. (If you're using agenix, this example is for sops. Refer to agenix documentation [for now].)
 
+
 ---
 ### Sops
+
 ```sh
 EDITOR=emacs sops secrets.json
 ```
@@ -89,44 +100,60 @@ EDITOR=emacs sops secrets.json
 { "your-network": "AFN6afBcZyzKnjkdBztgEpVH3mmlcNUEo5vtDQuqy0s=" }
 ```
 
+
 ```nix
 sops.secrets."your-network".mode = "0400";
 ```
+
 ---
 ### Age
+
+
 ```
 EDITOR=emacs agenix -e host1-your-network.age
 ```
+
 
 paste in the secret.
 ```
 AFN6afBcZyzKnjkdBztgEpVH3mmlcNUEo5vtDQuqy0s=
 ```
 
+
 add the following configuration to your hosts. 
 Where each host appropriately knows its own secrets.
 ```
 age.secrets."your-network".file = ./host1-your-network.age;
 ```
+
 ---
+
 ### privateKeyFile
 Using the command `wg genkey`, create a unique file on every host machine at the location specified in this option.
 
+
 ---
+
 ### privateKey
 The directive included is only for testing. 
 Usage outside those means may result in damages. 
 </details>
 
 <details>
-<summary><b>3. Defining a Network</b></summary>
+<summary><b>2. Defining a Network</b></summary>
+
+
 ## Define your network.
+---
 > [!TIP]
 > This portion is normally defined in the nixos-module system. 
 > With the inclusion of flake-parts, one may also define the network inside the flake-parts module system.
 > The options are identical.
 ---
+
+
 ### Define the network.
+
 ```nix
 { ... }:
 {
@@ -181,6 +208,7 @@ Usage outside those means may result in damages.
 ```
 
 ### Matching up machines to peers.
+
 This is the most error prone part of this procedure. Flake-guard has no idea which host it's supposed to be inside of `wireguard.networks.<NETWORK>.peers.by-name`. This can be adjusted via two options
 
 - `wireguard.hostName`
@@ -188,7 +216,9 @@ This is the most error prone part of this procedure. Flake-guard has no idea whi
 
 In the order of precedence given from top to bottom, flake-guard will use options to determine which host is equal to the in `wireguard.networks.<NETWORK>.peers.by-name.<HOSTNAME>`
 
+
 #### `wireguard.build.networks.<NETWORK>.self`
+
 is constructed whenever a machine finds its self in the network.
 
 `wireguard.build.networks.<NETWORK>._responsible` 
@@ -196,10 +226,12 @@ will contain every instance that potentially matched `self`.
 Under normal operating conditions, this should always be the length of `1`.
 Its inclusion is for debug purposes.
 
+
 ### Scoping default value.
 
 Flake-guard will default values based on the parent attr-set, 
 otherwise the precedence is in the order of:
+
 
 - `wireguard.networks.<NETWORK>.peers.by-name.<HOST>`
 - `wireguard.networks.<NETWORK>`
