@@ -63,14 +63,12 @@ this allows you to define your wireguard network once, and use it across multipl
 <summary><b>2. Setting up secrets</b></summary>
 
 ## Setting up secrets
-
 > [!TIP]
 > It is a common strategy to generate a wireguard key for each host, and then reference them all the same under the same namespace. Under each nixos-module context, the underlying value evaluates to a different secret.
 > The examples below also follow this strategy.
 > If not specified, flake-guard assumes the network name as the `secretsLookup` as a last-shot effort.
 
 
----
 #### Secrets Backends supported are
 
 - [agenix](https://github.com/ryantm/agenix)
