@@ -152,8 +152,9 @@ Define your network as such.
 ```nix
 { ... }:
 {
+  wireguard.enable = true;
   <age|sops>.secrets.your-network.mode = "0400";
- 
+  
   wireguard.networks.your-network = {
     listenPort = 51820;
     domainName = "vpn";
