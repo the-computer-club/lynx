@@ -150,8 +150,9 @@ Usage outside those means may result in damages.
 Define your network as such.
 
 ```nix
+# network.nix
 { ... }:
-{
+{ 
   wireguard.enable = true;
   <age|sops>.secrets.your-network.mode = "0400";
   
@@ -212,6 +213,12 @@ This is the most error prone part of this procedure. Flake-guard has no idea whi
 
 In the order of precedence given from top to bottom, flake-guard will use options to determine which host is equal to the in `wireguard.networks.<NETWORK>.peers.by-name.<HOSTNAME>`
 
+```
+imports = [ ./network.nix ];
+networking.hostName = "host1";
+# or
+# wireguard.hostName = "host1";
+```
 
 #### `wireguard.build.networks.<NETWORK>.self`
 
