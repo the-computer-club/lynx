@@ -39,12 +39,12 @@
     "lynx": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-yQhVW1oLBg96qOswSbye75htsaqSpavfhJX5vc/fC1U=",
-        "path": "/nix/store/z7zcjs6a7xhkpylzkswins2q7ajqp6c4-source",
+        "narHash": "sha256-QYA90aT8ZKh3MUVe/Y1jiuZp4vL6Pj9eoIX4AUEzQaM=",
+        "path": "/nix/store/3mfzmw959p95jx710qp9r699gr5f0wik-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/z7zcjs6a7xhkpylzkswins2q7ajqp6c4-source",
+        "path": "/nix/store/3mfzmw959p95jx710qp9r699gr5f0wik-source",
         "type": "path"
       }
     },

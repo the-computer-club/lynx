@@ -62,10 +62,17 @@ in
 
     secretsLookup = mkOption {
       description = ''
-      This value represents the key used in `sops.secret.<secretsLookup>` in the evaluation of the nixos module.
+      This value represents the key used in `sops.secret.<secretsLookup>`
+      in the evaluation of the nixos module.
       This key is used to lookup the private key for the wireguard connection.
       '';
       type = types.nullOr types.str;
+      default = null;
+    };
+
+    pskLookup = mkOption {
+      description = ''same as secretsLookup, but for preshared-keys.'';
+      type = types.null types.str;
       default = null;
     };
 
@@ -105,8 +112,33 @@ in
     };
 
     interfaceName = mkOption {
-      type = types.str;
-      internal = true;
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    _endpoint.ip = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
+    _endpoint.port = mkOption {
+      type = types.nullOr types.port;
+      default = null;
+    };
+
+    dynamicEndpointRefreshSeconds = mkOption {
+      type = types.int;
+      default = 0;
+    };
+
+    dynamicEndpointRefreshRestartSeconds = mkOption {
+      type = types.nullOr types.unsigned;
+      default = null;
+    };
+
+    routeTable = mkOption {
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
     };
   };
 }

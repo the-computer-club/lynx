@@ -5,6 +5,12 @@ node-options = import ./node-options.nix args;
 autoconfig-options = import ./autoconfig-options.nix args;
 in {
   options = {
+    pskLookup = mkOption {
+      description = ''same as secretsLookup, but for preshared-keys.'';
+      type = types.null types.str;
+      default = null;
+    };
+
     secretsLookup = mkOption {
       description = ''
         Used as a lookup key for either
@@ -29,7 +35,22 @@ in {
     };
 
     privateKeyFile = mkOption {
-      type = types.nullOr types.str;
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
+    };
+
+    metric = mkOption {
+      type = types.int;
+      default = 700;
+    };
+
+    fwMark = mkOption {
+      type = types.nullOr types.nonEmptyStr;
+      default = null;
+    };
+
+    table = mkOption {
+      type = types.nullOr types.nonEmptyStr;
       default = null;
     };
 
@@ -39,7 +60,7 @@ in {
         if none is assigned the network name is used.
       '';
 
-      type = types.nullOr types.str;
+      type = types.nullOr types.nonEmptyStr;
       default = null;
     };
 
@@ -89,9 +110,16 @@ in {
       default = {};
     };
 
-    metadata.acmeServer = mkOption {
-      type = types.nullOr types.nonEmptyStr;
-      default = null;
+    metadata = {
+      acmeServer = mkOption {
+        type = types.nullOr types.nonEmptyStr;
+        default = null;
+      };
+
+      dns = mkOption {
+        type = types.listOf types.nonEmptyStr;
+        default = [];
+      };
     };
   };
 }

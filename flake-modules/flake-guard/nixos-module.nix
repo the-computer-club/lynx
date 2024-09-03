@@ -2,11 +2,11 @@ args@{ options, config, lib, pkgs, ... }:
 with lib;
 let
   inherit (import ./lib.nix args)
-    toIpv4
-    toIpv4Range
     toPeer
     rmParent
     composeNetwork
+    derivePrivateKeyFile
+    translate
   ;
 
   inherit (lib)
@@ -102,31 +102,16 @@ in
           inherit (network) listenPort; #sops age;
         };
 
-      in network // {
+        peer = peer-data // network-defaults;
+
+      in lib.recursiveUpdate peer {
         inherit _responsible;
-        self = (mkIf (self-name != null)
-          ((peer-data // network-defaults) //
-           {
-             found = lib.mkForce true;
-             privateKeyFile =
-               let
-                 deriveSecret = lookup:
-                   map (backend:
-                     if (config ? backend && config.${backend}.secrets ? lookup) then
-                       config.${backend}.secrets.${lookup}
-                     else null
-                   ) ["sops" "age"];
-               in
-                 head (filter (x: x == null)
-                   (map (x: if (x != null) then x else null) [
-                     peer-data.privateKeyFile
-                     network.privateKeyFile
-                     (deriveSecret peer-data.secretsLookup)
-                     (deriveSecret network.secretsLookup)
-                     (deriveSecret net-name)
-                   ])
-                 );
-           }));
+        self = mkIf (self-name != null) {
+          privateKeyFile = derivePrivateKeyFile peer;
+          peers.psk =
+            mapAttrs (peer-name: peer: derivePskFile peer)
+              network.peers.by-name;
+        };
       }) cfg.build.composed);
 
   config.networking.firewall.allowedUDPPorts =
@@ -138,34 +123,7 @@ in
 
   # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
-    mapAttrs (net-name: network:
-      (mkIf (network.self.found && network.autoConfig."networking.wireguard".interface.enable) {
-        inherit (network.self)
-          listenPort
-          privateKey
-          privateKeyFile;
-
-        ips = with network.self; ipv4 ++ ipv6;
-
-        peers = lib.optionals
-          network.autoConfig."networking.wireguard".peers.mesh.enable
-          (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
-      })
-    ) cfg.build.networks;
-
-  config.services.rosenpass.settings =
-    mapAttrs(net-name: network:
-      (mkIf cfg.autoConfig."rosenpass".enable {
-
-        public_key = network.self.publicKey;
-        secret_key = network.self.privateKeyFile;
-        endpoint = network.self.selfEndpoint;
-
-        settings.peers = lib.optionals
-          network.autoConfig."rosenpass.peers".peers.mesh.enable
-          (lib.mapAttrsToList (k: v: toRosenPeer v) network.peers.by-name);
-      })
-    ) config.wireguard.build.networks;
+    ("networking.wireguard".from cfg.build.networks);
 
   # build the hostnames via
   config.networking.hosts =
@@ -192,4 +150,28 @@ in
             )) network.peers.by-name)
         )
       )) cfg.build.networks);
+
+  config.systemd.network.netdevs  = mapAttrs' (net-name: network:
+    nameValuePair
+      "${network.metric}-${net-name}"
+      (translate."systemd.network.netdev".from network)
+  );
+
+  config.systemd.network.networks = mapAttrs (net-name: network: {
+    matchConfig.Name = network.self.interfaceName;
+    address = network.self.ipv4 ++ network.self.ipv6;
+
+    networkConfig = {
+      IPv6AcceptRA = mkDefault false;
+      DHCP = mkDefault "no";
+    };
+  });
+
+  config.services.rosenpass.settings = mapAttrs(net-name: network:
+    mkIf network.autoConfig."rosenpass".enable (translate."services.rosenpass".from network)
+  ) cfg.build.networks;
+
+  config.networking.wg-quick.interfaces = mapAttrs (net-name: network:
+    mkIf network.autoConfig."networking.wg-quick".enable (translate."networking.wg-quick".from network)
+  ) cfg.build.networks;
 }
