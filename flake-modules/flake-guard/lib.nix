@@ -50,7 +50,23 @@ rec {
         { inherit ip cidr; data=peer; }
     ) peers;
 
+
+  splitIp = ip:
+    let
+      array = lib.splitString "/" ip;
+      address = builtins.elemAt 0 array;
+      mask = builtins.elemAt 1 array;
+    in
+    { inherit address mask; };
+
   toIpv4 = ip: head (splitString "/" ip);
+
+  buildPeer = peer: peer // rec {
+    build.ipv4 = map splitIp peer.ipv4;
+    build.ipv6 = map splitIp peer.ipv6;
+    build.first.ipv4 = builtins.head build.ipv4;
+    build.first.ipv6 = builtins.head build.ipv6;
+  };
 
   composeNetwork =
     mapAttrs' (net-name: network:
@@ -81,7 +97,7 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           (peer // new-data //
+           buildPeer (peer // new-data //
            {
               inherit hostName;
 

@@ -108,5 +108,28 @@ in
       type = types.str;
       internal = true;
     };
+
+    build = {
+      ipv4 = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+
+      ipv6 = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+
+      first.ipv4 = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+
+      first.ipv6 = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
+    };
+
   };
 }
