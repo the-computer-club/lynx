@@ -2,7 +2,7 @@
   description = "Repository of shared modules";
   outputs = _: {
     flakeModules = {
-      "builtins" = ./flake-modules/builtins;
+      builtins = ./flake-modules/builtins;
       deploy-rs = ./flake-modules/deploy-rs;
       lynx-docs = ./flake-modules/lynx-docs;
       flake-guard = ./flake-modules/flake-guard/flake-module.nix;

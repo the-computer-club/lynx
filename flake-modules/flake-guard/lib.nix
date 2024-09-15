@@ -61,12 +61,6 @@ rec {
 
   toIpv4 = ip: head (splitString "/" ip);
 
-  buildPeer = peer: peer // rec {
-    build.ipv4 = map splitIp peer.ipv4;
-    build.ipv6 = map splitIp peer.ipv6;
-    build.first.ipv4 = builtins.head build.ipv4;
-    build.first.ipv6 = builtins.head build.ipv6;
-  };
 
   composeNetwork =
     mapAttrs' (net-name: network:
@@ -84,7 +78,7 @@ rec {
              else network.${name};
 
            inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
-           new-data = inheritedAttrs [
+           inheritedData = inheritedAttrs [
              "interfaceName"
              "listenPort"
              "domainName"
@@ -97,22 +91,32 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           buildPeer (peer // new-data //
+           (lib.foldl' lib.recursiveUpdate {}
+          [
            {
-              inherit hostName;
-
-              fqdn =
+             inherit hostName;
+             build = rec {
+               ipv4 = map splitIp peer.ipv4;
+               ipv6 = map splitIp peer.ipv6;
+               first.ipv4 = builtins.head ipv4;
+               first.ipv6 = builtins.head ipv6;
+             };
+             fqdn =
                 if ((mkNodeOpt "domainName") != null && hostName != null)
                 then "${hostName}.${network.domainName}"
                 else null;
 
-              extraFQDNs =
+             extraFQDNs =
                 optionals
                   (peer.extraHostnames != [] && peer.domainName != null && hostName != null)
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
-              autoConfig = network.autoConfig // peer.autoConfig;
-           })) network.peers.by-name;
+             autoConfig = network.autoConfig // peer.autoConfig;
+           }
+           inheritedData
+           peer
+
+          ]) network.peers.by-name);
 
         by-group =
           let
