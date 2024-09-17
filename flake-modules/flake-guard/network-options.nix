@@ -89,8 +89,8 @@ in {
       default = {};
     };
 
-    metadata.acmeServer = mkOption {
-      type = types.nullOr types.nonEmptyStr;
+    metadata = mkOption {
+      type = types.unspecified;
       default = null;
     };
   };
