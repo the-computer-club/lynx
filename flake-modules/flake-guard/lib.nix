@@ -79,7 +79,6 @@ rec {
 
            inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
            inheritedData = inheritedAttrs [
-             "interfaceName"
              "listenPort"
              "domainName"
              "secretsLookup"
@@ -93,7 +92,9 @@ rec {
          in
            (lib.foldl' lib.recursiveUpdate {}
           [
+           peer
            {
+             inherit interfaceName;
              inherit hostName;
              build = rec {
                ipv4 = map splitIp peer.ipv4;
@@ -114,8 +115,6 @@ rec {
              autoConfig = network.autoConfig // peer.autoConfig;
            }
            inheritedData
-           peer
-
           ]) network.peers.by-name);
 
         by-group =

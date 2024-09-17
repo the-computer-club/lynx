@@ -5,6 +5,11 @@ let
 in
 {
   options = {
+    interfaceName = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+
     ipv6 = mkOption {
       type = types.listOf types.str;
       default = [];
@@ -104,11 +109,6 @@ in
       default = null;
     };
 
-    interfaceName = mkOption {
-      type = types.str;
-      internal = true;
-    };
-
     build = {
       ipv4 = mkOption {
         type = types.nullOr types.str;
@@ -130,6 +130,5 @@ in
         default = null;
       };
     };
-
   };
 }
