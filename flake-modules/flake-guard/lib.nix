@@ -100,9 +100,11 @@ rec {
                first.ipv6 = builtins.head ipv6;
              };
              fqdn =
+               if (!peer.nameAsFQDN) then
                 if ((mkNodeOpt "domainName") != null && hostName != null)
                 then "${hostName}.${network.domainName}"
-                else null;
+                else null
+              else hostName;
 
              extraFQDNs =
                 optionals
