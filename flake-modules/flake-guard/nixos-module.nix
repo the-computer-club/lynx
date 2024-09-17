@@ -117,7 +117,7 @@ in
                      else null
                    ) ["sops" "age"];
                in
-                 head (filter (x: x == null)
+                 (head (filter (x: x == null)
                    (map (x: if (x != null) then x else null) [
                      peer-data.privateKeyFile
                      network.privateKeyFile
@@ -125,7 +125,7 @@ in
                      (deriveSecret network.secretsLookup)
                      (deriveSecret net-name)
                    ])
-                 );
+                 ));
            }));
       }) cfg.build.composed);
 

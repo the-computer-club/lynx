@@ -61,9 +61,8 @@ rec {
 
   toIpv4 = ip: head (splitString "/" ip);
 
-
   composeNetwork =
-    mapAttrs' (net-name: network:
+    mapAttrs (net-name: network:
      let
        interfaceName =
          if network.interfaceName != null
@@ -90,10 +89,7 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           (lib.foldl' lib.recursiveUpdate {}
-          [
-           peer
-           {
+           ({
              inherit interfaceName;
              inherit hostName;
              build = rec {
@@ -113,9 +109,9 @@ rec {
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
              autoConfig = network.autoConfig // peer.autoConfig;
-           }
-           inheritedData
-          ]) network.peers.by-name);
+           } // inheritedData)
+           // peer
+       ) network.peers.by-name;
 
         by-group =
           let
@@ -128,10 +124,11 @@ rec {
                   {} (partition (p: elem group-name p.groups) (attrValues by-name)).right
               );
           in
-            per-groups;
+            {};
+            # per-groups;
       in
-        nameValuePair
-        interfaceName
+        # nameValuePair
+        # interfaceName
           (network // {
             inherit interfaceName;
             peers.by-group = by-group;
