@@ -30,9 +30,6 @@ let
   ;
 
   network-options = import ./network-options.nix args;
-  node-options = import ./node-options.nix args;
-  settings-options = import ./settings.nix args;
-  autoconfig-options = import ./autoconfig-options.nix args;
   toplevel-options = import ./toplevel.nix args;
 
   cfg = config.wireguard;
@@ -49,7 +46,6 @@ in
   ];
 
   options.wireguard = recursiveUpdate toplevel-options.options {
-    enable = mkEnableOption "enable wireguard nixos module";
     hostName = mkOption {
       description = ''
         configures `wireguard.networks.<network>.self`
@@ -78,7 +74,7 @@ in
     (composeNetwork config.wireguard.networks);
 
   # build network with `self` selected
-  config.wireguard.build.networks = mkIf cfg.enable
+  config.wireguard.build.networks =
     (mapAttrs (net-name: network:
       let
         _responsible =
