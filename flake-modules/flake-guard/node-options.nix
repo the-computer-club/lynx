@@ -60,7 +60,7 @@ in
       default = null;
     };
 
-    extraHostnames = mkOption {
+    extraHostNames = mkOption {
       type = types.listOf types.str;
       default = [];
     };
