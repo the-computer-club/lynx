@@ -82,6 +82,7 @@ rec {
              "domainName"
              "secretsLookup"
              "privateKeyFile"
+             "nameAsFQDN"
            ];
 
            hostName =

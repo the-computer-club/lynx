@@ -94,6 +94,8 @@ in
       default = [];
     };
 
+    nameAsFQDN = mkEnableOption "use hostname as a fully qualified domain name. ignoring `domainName` ";
+
     persistentKeepalive = mkOption {
       type = types.nullOr types.int;
       default = null;

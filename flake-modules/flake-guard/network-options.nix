@@ -23,6 +23,8 @@ in {
       default = null;
     };
 
+    nameAsFQDN = mkEnableOption "use hostname as a fully qualified domain name. ignoring `domainName` ";
+
     domainName = mkOption {
       type = types.nullOr types.str;
       default = null;

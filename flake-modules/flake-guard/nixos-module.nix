@@ -104,29 +104,31 @@ in
 
       in network // {
         inherit _responsible;
-        self = (mkIf (self-name != null)
-          ((peer-data // network-defaults) //
-           {
-             found = lib.mkForce true;
-             privateKeyFile =
-               let
-                 deriveSecret = lookup:
-                   map (backend:
-                     if (config ? backend && config.${backend}.secrets ? lookup) then
-                       config.${backend}.secrets.${lookup}
-                     else null
-                   ) ["sops" "age"];
-               in
-                 (head (filter (x: x == null)
-                   (map (x: if (x != null) then x else null) [
-                     peer-data.privateKeyFile
-                     network.privateKeyFile
-                     (deriveSecret peer-data.secretsLookup)
-                     (deriveSecret network.secretsLookup)
-                     (deriveSecret net-name)
-                   ])
-                 ));
-           }));
+        self =
+          (mkIf (self-name != null)
+            ((peer-data // network-defaults) //
+            {
+              found = lib.mkForce true;
+              privateKeyFile =
+                let
+                  deriveSecret = lookup:
+                    map (backend:
+                      if (config ? backend && config.${backend}.secrets ? lookup) then
+                        config.${backend}.secrets.${lookup}
+                      else null
+                    ) ["sops" "age"];
+                in
+                  (head (filter (x: x == null)
+                    (map (x: if (x != null) then x else null) [
+                      peer-data.privateKeyFile
+                      network.privateKeyFile
+                      (deriveSecret peer-data.secretsLookup)
+                      (deriveSecret network.secretsLookup)
+                      (deriveSecret net-name)
+                    ])
+                  ));
+            })
+        );
       }) cfg.build.composed);
 
   config.networking.firewall.allowedUDPPorts =
