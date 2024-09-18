@@ -7,6 +7,7 @@ let
     toPeer
     rmParent
     composeNetwork
+    safeHead
   ;
 
   inherit (lib)
