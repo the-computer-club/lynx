@@ -22,6 +22,11 @@ let
   ;
 in
 rec {
+  safeHead = list:
+    if (builtins.length list) >= 1
+    then (builtins.head list)
+    else null;
+
   toPeer = p: {
     inherit (p)
       publicKey
@@ -54,12 +59,10 @@ rec {
   splitIp = ip:
     let
       array = lib.splitString "/" ip;
-      address = builtins.elemAt 0 array;
-      mask = builtins.elemAt 1 array;
+      address = builtins.elemAt array 0;
+      mask = builtins.elemAt array 1;
     in
     { inherit address mask; };
-
-  toIpv4 = ip: head (splitString "/" ip);
 
   composeNetwork =
     mapAttrs (net-name: network:
@@ -90,15 +93,10 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           ({
+           ( inheritedData // {
              inherit interfaceName;
              inherit hostName;
-             build = rec {
-               ipv4 = map splitIp peer.ipv4;
-               ipv6 = map splitIp peer.ipv6;
-               first.ipv4 = builtins.head ipv4;
-               first.ipv6 = builtins.head ipv6;
-             };
+
              fqdn =
                if (!peer.nameAsFQDN) then
                 if ((mkNodeOpt "domainName") != null && hostName != null)
@@ -113,7 +111,14 @@ rec {
 
              autoConfig = network.autoConfig // peer.autoConfig;
            } // inheritedData)
-           // peer
+           // peer // {
+             build = rec {
+               ipv4 = map splitIp peer.ipv4;
+               ipv6 = map splitIp peer.ipv6;
+               first.ipv4 = safeHead ipv4;
+               first.ipv6 = safeHead ipv6;
+             };
+           }
        ) network.peers.by-name;
 
         by-group =

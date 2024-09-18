@@ -87,9 +87,11 @@ in
           let
             names =
               builtins.filter(p: p.val) (lib.mapAttrsToList (k: v: {key=k; val=v;}) _responsible);
+
+            name = (safeHead names);
           in
-            if (builtins.length names) == 1
-            then (builtins.head names).key
+            if (name != null)
+            then name.key
             else null;
 
         peer-data = network.peers.by-name.${self-name};
@@ -102,7 +104,7 @@ in
         inherit _responsible;
         self =
           (mkIf (self-name != null)
-            ((peer-data // network-defaults) //
+            ((network-defaults // peer-data) //
             {
               found = lib.mkForce true;
               privateKeyFile =

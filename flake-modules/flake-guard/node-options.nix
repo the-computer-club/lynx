@@ -111,24 +111,39 @@ in
       default = null;
     };
 
-    build = {
+    build =
+      let
+        mod = {
+          options = {
+            address = mkOption {
+              type = types.str;
+            };
+            mask = mkOption {
+              type = types.str;
+            };
+          };
+        };
+
+        peerBuilt = types.submodule mod;
+      in
+    {
       ipv4 = mkOption {
-        type = types.nullOr types.str;
-        default = null;
+        type = types.listOf peerBuilt ;
+        default = [];
       };
 
       ipv6 = mkOption {
-        type = types.nullOr types.str;
-        default = null;
+        type = types.listOf peerBuilt;
+        default = [];
       };
 
       first.ipv4 = mkOption {
-        type = types.nullOr types.str;
+        type = types.nullOr peerBuilt;
         default = null;
       };
 
       first.ipv6 = mkOption {
-        type = types.nullOr types.str;
+        type = types.nullOr peerBuilt;
         default = null;
       };
     };
