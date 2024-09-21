@@ -50,5 +50,12 @@ in
       type = types.attrsOf (types.submodule network-options);
       default = {};
     };
+
+    lib = mkOption {
+      description = "references to the library";
+      type = types.unspecified;
+      default = import ./lib.nix args;
+    };
+
   };
 }

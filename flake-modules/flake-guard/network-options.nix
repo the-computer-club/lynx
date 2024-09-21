@@ -26,8 +26,47 @@ in {
     nameAsFQDN = mkEnableOption "use hostname as a fully qualified domain name. ignoring `domainName` ";
 
     domainName = mkOption {
+      description = ''
+      simply appends {hostName}.{domainName}, so that hosts which perfer
+      names can utilize `peer.fqdn`
+      '';
+
       type = types.nullOr types.str;
       default = null;
+    };
+
+    authority = {
+      rootCertificate = mkOption {
+        description = ''
+          ACME root certificate.
+        '';
+        type = types.nullOr types.path;
+        default = null;
+      };
+
+      subca = mkOption {
+        default = {};
+        description = ''
+        sub-ca information for clients.
+        '';
+
+        type = types.attrsOf (types.submodule {
+          certificate = mkOption {
+            default = null;
+            type = types.nullOr types.path;
+          };
+
+          endpoint = mkOption {
+            default = null;
+            type = types.nullOr types.path;
+          };
+        });
+      };
+
+      dns = mkOption {
+        type = types.nullOr (types.listOf types.nonEmptyStr);
+        default = null;
+      };
     };
 
     privateKeyFile = mkOption {
