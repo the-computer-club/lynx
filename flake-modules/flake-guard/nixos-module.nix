@@ -74,6 +74,20 @@ in
   config.wireguard.build.composed =
     (composeNetwork config.wireguard.networks);
 
+  config.assertions = [{
+    message =
+      let
+        x = filter (n: net: net.self.found && net.self.privateKeyFile == null);
+      in
+      ''
+        you failed to find your private key for wireguard.
+      '';
+
+    assertion = builtins.any
+      (mapAttrsToList(n: net: net.self.found && net.self.privateKeyFile == null)
+        config.wireguard.build.networks);
+  }];
+
   # build network with `self` selected
   config.wireguard.build.networks =
     (mapAttrs (net-name: network:
@@ -105,17 +119,17 @@ in
         inherit _responsible;
         self =
           (mkIf (self-name != null)
-            (peer-data //
-            {
+            ((lib.traceValSeqN 3 peer-data) //
+            (lib.traceValSeqN 3 {
               found = lib.mkForce true;
               privateKeyFile =
                 let
                   deriveSecret = lookup:
-                    map (backend:
-                      if (config ? backend && config.${backend}.secrets ? lookup) then
+                    lib.traceValSeqN 3 (map (backend:
+                      if (lookup != null && config ? backend && config.${backend}.secrets ? lookup) then
                         config.${backend}.secrets.${lookup}
                       else null
-                    ) ["sops" "age"];
+                    ) ["sops" "age"]);
                 in
                   (head (filter (x: x == null)
                     (map (x: if (x != null) then x else null) (map (x: lib.traceValSeqN 3 x) [
@@ -126,7 +140,7 @@ in
                       (deriveSecret net-name)
                     ]))
                   ));
-            })
+            }))
         );
       }) cfg.build.composed);
 

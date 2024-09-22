@@ -94,8 +94,7 @@ rec {
              else peer.hostName;
          in
            (( inheritedData // {
-             inherit interfaceName;
-             inherit hostName;
+             inherit interfaceName hostName;
 
              fqdn =
                if (!peer.nameAsFQDN) then
