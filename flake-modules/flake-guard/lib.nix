@@ -93,7 +93,7 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           ( inheritedData // {
+           (( inheritedData // {
              inherit interfaceName;
              inherit hostName;
 
@@ -110,8 +110,9 @@ rec {
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
              autoConfig = network.autoConfig // peer.autoConfig;
-           } // inheritedData)
-           // peer // {
+           })
+           // peer)
+           // {
              build = rec {
                ipv4 = map splitIp peer.ipv4;
                ipv6 = map splitIp peer.ipv6;
