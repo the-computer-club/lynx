@@ -98,7 +98,13 @@ in {
     self = mkOption {
       type = types.submodule {
         options =
-          ({ found = mkEnableOption "self was found"; } // node-options.options);
+          ({
+            found = mkEnableOption "self was found";
+            privateKeyFile = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+            };
+          } // node-options.options);
       };
       default = {};
     };
