@@ -112,6 +112,7 @@ rec {
              autoConfig = network.autoConfig // peer.autoConfig;
            })
            // peer)
+
            // {
              build = rec {
                ipv4 = map splitIp peer.ipv4;
