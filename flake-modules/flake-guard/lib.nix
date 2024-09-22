@@ -64,6 +64,13 @@ rec {
     in
     { inherit address mask; };
 
+  deriveSecret = lookup:
+    (map (backend:
+      if (lookup != null && config ? backend && config.${backend}.secrets ? lookup) then
+        config.${backend}.secrets.${lookup}
+      else null
+    ) ["sops" "age"]);
+
   composeNetwork =
     mapAttrs (net-name: network:
      let
@@ -83,8 +90,6 @@ rec {
            inheritedData = inheritedAttrs [
              "listenPort"
              "domainName"
-             "secretsLookup"
-             "privateKeyFile"
              "nameAsFQDN"
            ];
 
