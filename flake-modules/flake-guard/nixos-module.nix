@@ -97,15 +97,15 @@ in
 
         peer-data = network.peers.by-name.${self-name};
 
-        network-defaults = {
-          inherit (network) listenPort; #sops age;
-        };
+        # network-defaults = {
+        #   inherit (network) listenPort; #sops age;
+        # };
 
       in network // {
         inherit _responsible;
         self =
           (mkIf (self-name != null)
-            ((network-defaults // peer-data) //
+            (peer-data //
             {
               found = lib.mkForce true;
               privateKeyFile =
@@ -118,7 +118,7 @@ in
                     ) ["sops" "age"];
                 in
                   (head (filter (x: x == null)
-                    (map (x: if (x != null) then x else null) ( lib.traceVal [
+                    (map (x: if (x != null) then x else null) (map (x: lib.traceValSeqN 3 x) [
                       peer-data.privateKeyFile
                       network.privateKeyFile
                       (deriveSecret peer-data.secretsLookup)
