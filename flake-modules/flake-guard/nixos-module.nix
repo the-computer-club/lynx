@@ -133,9 +133,7 @@ in
                 in
                   (lib.traceValSeqN 3 (head (filter (x: x == null)
                     (map (x: if (x != null) then x else null) ([
-                      peer-data.privateKeyFile
                       network.privateKeyFile
-                      (deriveSecret peer-data.secretsLookup)
                       (deriveSecret network.secretsLookup)
                       (deriveSecret net-name)
                     ]))
