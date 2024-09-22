@@ -11,7 +11,6 @@ in {
     modules = [
       # config.flake.nixosModules.flake-guard-host
       {
-        wireguard.enable = true;
         wireguard.hostname = "acme";
         networking.hostName = "acme";
       }
@@ -39,7 +38,6 @@ in {
         common = {config, ...}:
         {
           imports = [inputs.lynx.nixosModules.flake-guard-host];
-          wireguard.enable = true;
           wireguard.defaults.autoConfig.openFirewall = true;
           wireguard.networks = rootConfig.wireguard.networks;
 

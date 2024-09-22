@@ -74,19 +74,19 @@ in
   config.wireguard.build.composed =
     (composeNetwork config.wireguard.networks);
 
-  config.assertions = [{
-    message =
-      let
-        x = filter (n: net: net.self.found && net.self.privateKeyFile == null);
-      in
-      ''
-        you failed to find your private key for wireguard.
-      '';
+  # config.assertions = [{
+  #   message =
+  #     let
+  #       x = filter (n: net: net.self.found && net.self.privateKeyFile == null);
+  #     in
+  #     ''
+  #       you failed to find your private key for wireguard.
+  #     '';
 
-    assertion = builtins.any
-      (mapAttrsToList(n: net: net.self.found && net.self.privateKeyFile == null)
-        config.wireguard.build.networks);
-  }];
+  #   assertion = builtins.any
+  #     (mapAttrsToList(n: net: net.self.found && net.self.privateKeyFile == null)
+  #       config.wireguard.build.networks);
+  # }];
 
   # build network with `self` selected
   config.wireguard.build.networks =
@@ -125,14 +125,14 @@ in
               privateKeyFile =
                 let
                   deriveSecret = lookup:
-                    lib.traceValSeqN 3 (map (backend:
+                    (map (backend:
                       if (lookup != null && config ? backend && config.${backend}.secrets ? lookup) then
                         config.${backend}.secrets.${lookup}
                       else null
                     ) ["sops" "age"]);
                 in
                   (head (filter (x: x == null)
-                    (map (x: if (x != null) then x else null) (map (x: lib.traceValSeqN 3 x) [
+                    (map (x: if (x != null) then x else null) ([
                       peer-data.privateKeyFile
                       network.privateKeyFile
                       (deriveSecret peer-data.secretsLookup)
