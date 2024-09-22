@@ -25,11 +25,6 @@ in
       default = null;
     };
 
-    privateKeyFile = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
-
     privateKey = mkOption {
       description = ''
         world wide web readable credentials
@@ -63,15 +58,6 @@ in
     extraHostNames = mkOption {
       type = types.listOf types.str;
       default = [];
-    };
-
-    secretsLookup = mkOption {
-      description = ''
-      This value represents the key used in `sops.secret.<secretsLookup>` in the evaluation of the nixos module.
-      This key is used to lookup the private key for the wireguard connection.
-      '';
-      type = types.nullOr types.str;
-      default = null;
     };
 
     listenPort = mkOption {

@@ -1,4 +1,4 @@
-{inputs, config, self, ...}:
+{inputs, lib, config, self, ...}:
 let rootConfig = config;
 in {
   imports = [
@@ -6,19 +6,34 @@ in {
     ./network.nix
   ];
 
-  flake.nixosConfigurations.acme = inputs.nixpkgs.lib.nixosSystem {
+  flake.nixosConfigurations.flake-guard-eval-privateKeyFile = inputs.nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
     modules = [
-      # config.flake.nixosModules.flake-guard-host
-      {
-        wireguard.hostname = "acme";
-        networking.hostName = "acme";
+      inputs.lynx.nixosModules.flake-guard-host
+      { wireguard.networks.testnet.peers.by-name.nginx.privateKey = lib.mkForce null; }
+      { wireguard.hostname = "nginx";
+
+        wireguard.networks = rootConfig.wireguard.networks;
+        services.openssh.hostKeys = [
+          {
+            path = ./SNAKEOIL;
+            type = "ed25519";
+          }
+        ];
+        sops.defaultSopsFile = ./secrets.json;
+        sops.secrets."testnet" = {};
       }
     ];
   };
 
+
+
   perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
   {
+    # packages.ci = shellScriptBin "ci" ''
+    #   ${config.packages.flake-guard-test}
+    # '';
+
     packages.flake-guard-test =
       let
         test-certificates = pkgs.runCommandLocal "test-certificates" { } ''

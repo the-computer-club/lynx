@@ -119,8 +119,8 @@ in
         inherit _responsible;
         self =
           (mkIf (self-name != null)
-            ((lib.traceValSeqN 3 peer-data) //
-            (lib.traceValSeqN 3 {
+            (peer-data //
+            ({
               found = lib.mkForce true;
               privateKeyFile =
                 let
@@ -131,7 +131,7 @@ in
                       else null
                     ) ["sops" "age"]);
                 in
-                  (head (filter (x: x == null)
+                  (lib.traceValSeqN 3 (head (filter (x: x == null)
                     (map (x: if (x != null) then x else null) ([
                       peer-data.privateKeyFile
                       network.privateKeyFile
@@ -139,7 +139,7 @@ in
                       (deriveSecret network.secretsLookup)
                       (deriveSecret net-name)
                     ]))
-                  ));
+                  )));
             }))
         );
       }) cfg.build.composed);
