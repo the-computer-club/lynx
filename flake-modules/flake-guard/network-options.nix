@@ -51,12 +51,12 @@ in {
         '';
 
         type = types.attrsOf (types.submodule {
-          certificate = mkOption {
+          option.certificate = mkOption {
             default = null;
             type = types.nullOr types.path;
           };
 
-          endpoint = mkOption {
+          option.endpoint = mkOption {
             default = null;
             type = types.nullOr types.path;
           };
