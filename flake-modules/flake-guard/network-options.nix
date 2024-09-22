@@ -58,7 +58,7 @@ in {
 
           options.endpoint = mkOption {
             default = null;
-            type = types.nullOr types.path;
+            type = types.nullOr types.nonEmptyStr;
           };
         });
       };
