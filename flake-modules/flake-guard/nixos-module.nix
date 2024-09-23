@@ -124,7 +124,7 @@ in
             ({
               found = lib.mkForce true;
               privateKeyFile =
-                (safeHead (filter (x: x == null)
+                safeHead ((filter (x: x == null)
                   (map (x: if (x != null) then x else null) ([
                     (deriveSecret (lib.traceValSeqN 3 network).privateKeyFile)
                     (deriveSecret (lib.traceValSeqN 3 network).secretsLookup)
