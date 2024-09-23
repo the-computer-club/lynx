@@ -126,11 +126,10 @@ in
               privateKeyFile =
                 safeHead ((filter (x: x == null)
                   # (map (x: if (x != null) then x else null)
-                  ([
-                    (lib.traceValSeqN 3 network).privateKeyFile
-                    (deriveSecret config (lib.traceValSeqN 3 network).secretsLookup)
-                    (deriveSecret config net-name)
-                  ])));
+                  [network.privateKeyFile]
+                  ++ (deriveSecret config network.secretsLookup)
+                  ++ (deriveSecret config net-name)
+                ));
                 # );
             }))
         );
