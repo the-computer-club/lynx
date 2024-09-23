@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ lib, ... }:
 let
   inherit (lib)
     mapAttrs'
@@ -64,7 +64,7 @@ rec {
     in
     { inherit address mask; };
 
-  deriveSecret = lookup:
+  deriveSecret = config: lookup:
     (map (backend:
       if (lib.traceVal (lookup != null && (lib.traceVal (config ? backend)) && config.${backend}.secrets ? lookup)) then
         config.${backend}.secrets.${lookup}

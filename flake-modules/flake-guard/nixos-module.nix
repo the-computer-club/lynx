@@ -128,8 +128,8 @@ in
                   # (map (x: if (x != null) then x else null)
                   ([
                     (lib.traceValSeqN 3 network).privateKeyFile
-                    (deriveSecret (lib.traceValSeqN 3 network).secretsLookup)
-                    (deriveSecret net-name)
+                    (deriveSecret config (lib.traceValSeqN 3 network).secretsLookup)
+                    (deriveSecret config net-name)
                   ])));
                 # );
             }))
