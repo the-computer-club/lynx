@@ -91,6 +91,7 @@ rec {
              "listenPort"
              "domainName"
              "nameAsFQDN"
+             "secretsLookup"
            ];
 
            hostName =
@@ -98,7 +99,7 @@ rec {
              then peer-name
              else peer.hostName;
          in
-           (( inheritedData // {
+           (( inheritedData // peer) // {
              inherit interfaceName hostName;
 
              fqdn =
@@ -115,7 +116,6 @@ rec {
 
              autoConfig = network.autoConfig // peer.autoConfig;
            })
-           // peer)
 
            // {
              build = rec {
