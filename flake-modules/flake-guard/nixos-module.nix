@@ -8,6 +8,7 @@ let
     rmParent
     composeNetwork
     safeHead
+    deriveSecret
   ;
 
   inherit (lib)
@@ -123,21 +124,13 @@ in
             ({
               found = lib.mkForce true;
               privateKeyFile =
-                let
-                  deriveSecret = lookup:
-                    (map (backend:
-                      if (lookup != null && config ? backend && config.${backend}.secrets ? lookup) then
-                        config.${backend}.secrets.${lookup}
-                      else null
-                    ) ["sops" "age"]);
-                in
-                  (lib.traceValSeqN 3 (head (filter (x: x == null)
-                    (map (x: if (x != null) then x else null) ([
-                      network.privateKeyFile
-                      (deriveSecret network.secretsLookup)
-                      (deriveSecret net-name)
-                    ]))
-                  )));
+                (lib.traceValSeqN 3 (head (filter (x: x == null)
+                  (map (x: if (x != null) then x else null) ([
+                    network.privateKeyFile
+                    (deriveSecret (lib.traceVal network.secretsLookup))
+                    (deriveSecret net-name)
+                  ]))
+                )));
             }))
         );
       }) cfg.build.composed);
