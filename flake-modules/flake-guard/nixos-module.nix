@@ -125,12 +125,13 @@ in
               found = lib.mkForce true;
               privateKeyFile =
                 safeHead ((filter (x: x == null)
-                  (map (x: if (x != null) then x else null) ([
+                  # (map (x: if (x != null) then x else null)
+                  ([
                     (deriveSecret (lib.traceValSeqN 3 network).privateKeyFile)
                     (deriveSecret (lib.traceValSeqN 3 network).secretsLookup)
                     (deriveSecret net-name)
-                  ])))
-                );
+                  ])));
+                # );
             }))
         );
       }) cfg.build.composed);
