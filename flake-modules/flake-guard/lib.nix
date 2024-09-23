@@ -65,8 +65,10 @@ rec {
     { inherit address mask; };
 
   deriveSecret = config: lookup:
-    if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? lookup) then
-      config.sops.secrets.${lookup}
+    let x = lib.traceVal lookup;
+    in
+      if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? "${x}" ) then
+      config.sops.secrets.${x}
     else null;
 
   composeNetwork =
