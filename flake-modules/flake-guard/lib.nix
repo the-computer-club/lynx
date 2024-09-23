@@ -66,8 +66,8 @@ rec {
 
   deriveSecret = config: lookup:
     if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? lookup) then
-      config.${backend}.secrets.${lookup}
-    else null
+      config.sops.secrets.${lookup}
+    else null;
 
   composeNetwork =
     mapAttrs (net-name: network:
