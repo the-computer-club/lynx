@@ -124,13 +124,13 @@ in
             ({
               found = lib.mkForce true;
               privateKeyFile =
-                (lib.traceValSeqN 3 (head (filter (x: x == null)
+                (head (filter (x: x == null)
                   (map (x: if (x != null) then x else null) ([
                     network.privateKeyFile
                     (deriveSecret (lib.traceVal network.secretsLookup))
                     (deriveSecret net-name)
                   ]))
-                )));
+                ));
             }))
         );
       }) cfg.build.composed);
