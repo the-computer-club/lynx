@@ -66,7 +66,7 @@ rec {
 
   deriveSecret = lookup:
     (map (backend:
-      if (lib.traceVal (lookup != null && config ? backend && config.${backend}.secrets ? lookup)) then
+      if (lib.traceVal ((lib.traceVal lookup) != null && config ? backend && config.${backend}.secrets ? lookup)) then
         config.${backend}.secrets.${lookup}
       else null
     ) ["sops" "age"]);
