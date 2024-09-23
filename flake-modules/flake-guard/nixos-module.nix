@@ -188,7 +188,7 @@ in
                 "${ip}" =
                   (lib.optionals
                     network.autoConfig."networking.hosts".names.enable
-                    ([peer.hostName] ++ peer.extraHostnames)
+                    ([peer.hostName] ++ peer.extraHostNames)
                   ) ++
                   (lib.optionals
                     network.autoConfig."networking.hosts".FQDNs.enable
