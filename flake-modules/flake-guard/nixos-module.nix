@@ -127,8 +127,8 @@ in
                 safeHead ((filter (x: x == null)
                   # (map (x: if (x != null) then x else null)
                   (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
-                  ++ (deriveSecret config network.secretsLookup)
-                  ++ (deriveSecret config net-name)
+                  ++ (deriveSecret network.secretsLookup)
+                  ++ (deriveSecret net-name)
                 ));
                 # );
             }))
