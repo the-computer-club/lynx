@@ -110,7 +110,7 @@ rec {
 
              extraFQDNs =
                 optionals
-                  (peer.extraHostnames != [] && peer.domainName != null && hostName != null)
+                  (peer.extraHostNames != [] && peer.domainName != null && hostName != null)
                   (map (n: "${n}.${peer.domainName}") peer.extraHostnames);
 
              autoConfig = network.autoConfig // peer.autoConfig;
