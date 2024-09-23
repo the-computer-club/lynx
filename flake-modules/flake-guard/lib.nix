@@ -65,11 +65,9 @@ rec {
     { inherit address mask; };
 
   deriveSecret = config: lookup:
-    (map (backend:
-      if ((lib.traceVal (config ? backend)) && config.${backend}.secrets ? lookup) then
-        config.${backend}.secrets.${lookup}
-      else null
-    ) ["sops" "age"]);
+    if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? lookup) then
+      config.${backend}.secrets.${lookup}
+    else null
 
   composeNetwork =
     mapAttrs (net-name: network:
