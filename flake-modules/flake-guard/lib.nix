@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
   inherit (lib)
     mapAttrs'
@@ -64,12 +64,12 @@ rec {
     in
     { inherit address mask; };
 
-  deriveSecret = config: lookup:
-    let x = lib.traceVal lookup;
-    in
-      if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? "${x}" ) then
-        [config.sops.secrets.${x}.path]
-      else [];
+  deriveSecret = lookup:
+    map (backend:
+      if (config ? "${backend}" && config."${backend}".secrets ? "${lookup}") then
+        config.sops.secrets."${lookup}".path
+      else null
+    ) ["sops" "age"];
 
   composeNetwork =
     mapAttrs (net-name: network:
