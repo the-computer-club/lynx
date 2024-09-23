@@ -69,7 +69,7 @@ rec {
     in
       if ((lib.traceVal (config ? "sops")) && config.sops.secrets ? "${x}" ) then
         [config.sops.secrets.${x}]
-    else null;
+      else [];
 
   composeNetwork =
     mapAttrs (net-name: network:

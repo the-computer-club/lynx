@@ -126,7 +126,7 @@ in
               privateKeyFile =
                 safeHead ((filter (x: x == null)
                   # (map (x: if (x != null) then x else null)
-                  [network.privateKeyFile]
+                  (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
                   ++ (deriveSecret config network.secretsLookup)
                   ++ (deriveSecret config net-name)
                 ));
