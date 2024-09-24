@@ -112,8 +112,6 @@ rec {
                 optionals
                   (peer.extraHostNames != [] && peer.domainName != null && hostName != null)
                   (map (n: "${n}.${peer.domainName}") peer.extraHostNames);
-
-             autoConfig = network.autoConfig // peer.autoConfig;
            })
 
            // {
