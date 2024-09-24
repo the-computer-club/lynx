@@ -88,7 +88,6 @@ rec {
 
            inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
            inheritedData = inheritedAttrs [
-             "listenPort"
              "domainName"
              "nameAsFQDN"
            ];
