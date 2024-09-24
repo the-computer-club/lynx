@@ -87,12 +87,19 @@ in
     assertion = !(any predicate nets);
     message =
       ''
-        failed to find your private key for wireguard.
+        failed to find some of your private key for wireguard.
 
         ${concatStringsSep "\n"
-          (lib.traceVal (map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
+          (lib.traceVal (map (x:
+            ''
+            Your host was determined to be: ${x.self.hostName}
+            - config.wireguard.networks.${x.interfaceName}.privateKeyFile => ${x.privateKeyFile}
+            - config.wireguard.networks.${x.interfaceName}.secretsLookup => ${x.secretsLookup}
+           '')
             (filter predicate nets)))
          }
+
+
       '';
   }];
 
