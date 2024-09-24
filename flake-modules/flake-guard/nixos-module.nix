@@ -78,25 +78,22 @@ in
   config.assertions =
    let
      inherit (config.wireguard.build) networks;
-     inherit (builtins) filter any;
+     inherit (builtins) filter any attrValues concatStringsSep;
+     nets = attrValues networks;
      predicate =
       (net: net.self.found && net.self.privateKeyFile == null);
    in
   [{
+    assertion = any predicate nets;
     message =
       ''
         you failed to find your private key for wireguard.
 
-        concatStringsSep
-
-        ${concatStringsSep "\n" (map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
-          (filter predicate networks))}
-      ''
-
-    ;
-    assertion =
-
-      (any predicate (attrValues networks));
+        ${concatStringsSep "\n"
+          (lib.traceVal (map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
+            (filter predicate nets)))
+         }
+      '';
   }];
 
   # build network with `self` selected
