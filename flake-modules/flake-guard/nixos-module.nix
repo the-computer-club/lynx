@@ -77,8 +77,8 @@ in
 
   config.assertions =
    let
-     inherit (config.wireguard.build) networks;
-     inherit (net.self) found privateKeyFile;
+     inherit (config.wireguard.build.networks) asluni;
+     inherit (asluni.self) found privateKeyFile;
      inherit (builtins) filter any;
      predicate =
       (net: found && privateKeyFile == null);
