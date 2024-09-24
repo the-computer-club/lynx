@@ -87,7 +87,7 @@ in
     assertion = any predicate nets;
     message =
       ''
-        you failed to find your private key for wireguard.
+        failed to find your private key for wireguard.
 
         ${concatStringsSep "\n"
           (lib.traceVal (map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
