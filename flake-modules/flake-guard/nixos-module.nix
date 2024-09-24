@@ -87,8 +87,8 @@ in
       ''
         you failed to find your private key for wireguard.
 
-        ${map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n"
-          (filter predicate networks))}
+        ${map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
+          (filter predicate networks)}
       ''
     ;
     assertion = any predicate (attrValues networks);
