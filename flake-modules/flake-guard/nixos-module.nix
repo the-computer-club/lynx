@@ -75,19 +75,25 @@ in
   config.wireguard.build.composed =
     (composeNetwork config.wireguard.networks);
 
-  # config.assertions = [{
-  #   message =
-  #     let
-  #       x = filter (n: net: net.self.found && net.self.privateKeyFile == null);
-  #     in
-  #     ''
-  #       you failed to find your private key for wireguard.
-  #     '';
+  config.assertions =
+   let
+     inherit (config.wireguard.build) networks;
+     inherit (net.self) found privateKeyFile;
+     inherit (builtins) filter any;
+     predicate =
+      (net: found && privateKeyFile == null);
+   in
+  [{
+    message =
+      ''
+        you failed to find your private key for wireguard.
 
-  #   assertion = builtins.any
-  #     (mapAttrsToList(n: net: net.self.found && net.self.privateKeyFile == null)
-  #       config.wireguard.build.networks);
-  # }];
+        ${map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n"
+          (filter predicate networks))}
+      ''
+    ;
+    assertion = any predicate (attrValues networks);
+  }];
 
   # build network with `self` selected
   config.wireguard.build.networks =
@@ -112,10 +118,6 @@ in
 
         peer-data = network.peers.by-name.${self-name};
 
-        # network-defaults = {
-        #   inherit (network) listenPort; #sops age;
-        # };
-
       in network // {
         inherit _responsible;
         self =
@@ -125,12 +127,10 @@ in
               found = lib.mkForce true;
               privateKeyFile =
                 safeHead ((filter (x: x == null)
-                  # (map (x: if (x != null) then x else null)
                   (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
                   ++ (deriveSecret network.secretsLookup)
                   ++ (deriveSecret net-name)
                 ));
-                # );
             }))
         );
       }) cfg.build.composed);

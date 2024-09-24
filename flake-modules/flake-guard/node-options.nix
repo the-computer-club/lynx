@@ -37,11 +37,6 @@ in
     ignoreHostname = mkEnableOption
       "do not include this hostname in your /etc/hosts";
 
-    autoConfig = mkOption {
-      type = types.submodule autoconfig-options;
-      default = {};
-    };
-
     hostName = mkOption {
       description = ''
         This data is used to correlate peer information with the correct nixos-machine.
@@ -58,11 +53,6 @@ in
     extraHostNames = mkOption {
       type = types.listOf types.str;
       default = [];
-    };
-
-    listenPort = mkOption {
-      type = types.nullOr types.int;
-      default = null;
     };
 
     selfEndpoint = mkOption {
@@ -99,14 +89,12 @@ in
 
     build =
       let
-        mod = {
-          options = {
-            address = mkOption {
-              type = types.str;
-            };
-            mask = mkOption {
-              type = types.str;
-            };
+        mod.options = {
+          address = mkOption {
+            type = types.str;
+          };
+          mask = mkOption {
+            type = types.str;
           };
         };
 
