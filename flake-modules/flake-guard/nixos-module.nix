@@ -84,7 +84,7 @@ in
       (net: net.self.found && net.self.privateKeyFile == null);
    in
   [{
-    assertion = any predicate nets;
+    assertion = !(any predicate nets);
     message =
       ''
         failed to find your private key for wireguard.
