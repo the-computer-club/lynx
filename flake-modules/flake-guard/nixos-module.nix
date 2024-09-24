@@ -77,11 +77,10 @@ in
 
   config.assertions =
    let
-     inherit (config.wireguard.build.networks) asluni;
-     inherit (asluni.self) found privateKeyFile;
+     inherit (config.wireguard.build) networks;
      inherit (builtins) filter any;
      predicate =
-      (net: found && privateKeyFile == null);
+      (net: net.self.found && net.self.privateKeyFile == null);
    in
   [{
     message =
