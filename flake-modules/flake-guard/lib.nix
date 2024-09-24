@@ -101,16 +101,14 @@ rec {
              inherit interfaceName hostName;
 
              fqdn =
-               if (!peer.nameAsFQDN) then
-                if ((mkNodeOpt "domainName") != null && hostName != null)
-                then "${hostName}.${network.domainName}"
-                else null
-              else hostName;
+               if peer.fqdn == null then
+                if (!peer.nameAsFQDN && peer.fqdn == null) then
+                  if ((mkNodeOpt "domainName") != null && hostName != null)
+                  then "${hostName}.${network.domainName}"
+                  else null
+                else hostName
+             else peer.fqdn;
 
-             extraFQDNs =
-                optionals
-                  (peer.extraHostNames != [] && peer.domainName != null && hostName != null)
-                  (map (n: "${n}.${peer.domainName}") peer.extraHostNames);
            })
 
            // {

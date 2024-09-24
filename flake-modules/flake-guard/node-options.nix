@@ -65,11 +65,6 @@ in
       default = null;
     };
 
-    extraFQDNs = mkOption {
-      type = with types; listOf nonEmptyStr;
-      default = [];
-    };
-
     nameAsFQDN = mkEnableOption "use hostname as a fully qualified domain name. ignoring `domainName` ";
 
     persistentKeepalive = mkOption {
