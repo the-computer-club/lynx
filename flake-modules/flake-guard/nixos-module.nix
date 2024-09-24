@@ -86,10 +86,13 @@ in
     message =
       ''
         you failed to find your private key for wireguard.
+
+        concatStringsSep
+
+        ${concatStringsSep "\n" (map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
+          (filter predicate networks))}
       ''
-        # ${map (x: "    - config.wireguard.networks.${x.interfaceName}.self.privateKeyFile\n")
-        #   (filter predicate networks)}
-        # ''
+
     ;
     assertion =
 
