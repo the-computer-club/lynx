@@ -203,7 +203,7 @@ in
                     network.autoConfig."networking.hosts".names.enable
                     peer.extraHostNames
                   )
-                  ++(lib.optional network.autoConfig."networking.hosts".names.enable peer.hostName)
+                  ++(lib.optional network.autoConfig."networking.hosts".bareNames.enable peer.hostName)
                   ++(lib.optional network.autoConfig."networking.hosts".FQDNs.enable peer.fqdn)
                   # ++(lib.optionals network.autoConfig."networking.hosts".FQDNs.enable peer.extraFQDNs)
                 ;
