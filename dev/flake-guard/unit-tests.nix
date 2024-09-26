@@ -4,7 +4,6 @@ let
   module = config.flake.nixosConfigurations.unit-test;
 in
 {
-
   flake.nixosConfigurations.unit-test = inputs.nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
     modules = [
