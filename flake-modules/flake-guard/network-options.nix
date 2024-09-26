@@ -37,7 +37,7 @@ in {
       '';
 
       type = types.nullOr types.str;
-      default = cfg.defaults.nameAsFQDN;
+      default = cfg.defaults.domainName;
     };
 
     authority = {
