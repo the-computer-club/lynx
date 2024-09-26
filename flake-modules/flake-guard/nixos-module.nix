@@ -159,6 +159,9 @@ in
   config.networking.wireguard.interfaces =
     mapAttrs (net-name: network:
       (mkIf (network.self.found && network.autoConfig."networking.wireguard".interface.enable) {
+        inherit (network)
+          listenPort;
+
         inherit (network.self)
           privateKey
           privateKeyFile;
