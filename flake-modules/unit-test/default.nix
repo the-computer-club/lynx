@@ -31,9 +31,9 @@ in
   };
 
   config.evalChecks.failed =
-      builtins.filter
-        (x: x.assertion == false)
-        config.evalChecks.assertions;
+    builtins.filter
+      (x: x.assertion == false)
+      config.evalChecks.assertions;
 
   config.evalChecks.throw =
     if config.evalChecks.failed != [] then

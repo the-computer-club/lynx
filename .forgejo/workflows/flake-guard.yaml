@@ -1,0 +1,26 @@
+name: eval unit-tests
+on:
+  push:
+jobs:
+  eval-matrix:
+    runs-on: native
+    steps:
+    - name: Checkout repository
+      uses: http://codex.cypress.local/actions/checkout@v4
+
+    - name: nix version
+      run: |
+        nix --version
+
+    - name: nix eval .#evalChecks.throw
+      run: |
+        nix run ./dev#_config.evalChecks.throw
+
+    - name: nix flake show
+      run: |
+        nix flake show
+
+    - name: nix flake check
+      run: |
+        nix flake check
+
