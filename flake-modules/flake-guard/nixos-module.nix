@@ -201,12 +201,12 @@ in
                 "${ip}" =
                   (lib.optionals
                     network.autoConfig."networking.hosts".names.enable
-                    ([peer.hostName] ++ peer.extraHostNames)
-                  ) ++
-                  (lib.optionals
-                    network.autoConfig."networking.hosts".FQDNs.enable
-                    (lib.optional (peer.fqdn != null) peer.fqdn)
-                  );
+                    peer.extraHostNames
+                  )
+                  ++(lib.optional network.autoConfig."networking.hosts".names.enable peer.hostName)
+                  ++(lib.optional network.autoConfig."networking.hosts".FQDNs.enable peer.fqdn)
+                  # ++(lib.optionals network.autoConfig."networking.hosts".FQDNs.enable peer.extraFQDNs)
+                ;
               }) (peer.ipv4 ++ peer.ipv6)
             )) network.peers.by-name)
         )

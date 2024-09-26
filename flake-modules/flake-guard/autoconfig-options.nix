@@ -12,10 +12,10 @@ with lib;
     "networking.hosts" = {
       enable = mkEnableOption "";
       FQDNs.enable = mkEnableOption "write FQDNs into /etc/hosts";
+      bareNames.enable = mkEnableOption "write hostName into /etc/hosts";
       names.enable = mkEnableOption
       ''
-        write bare hostnames into /etc/hosts.
-        This hostnames lack suffixes, and cannot be accessible on the www.
+        write extraHostNames into /etc/hosts.
       '';
     };
   };
