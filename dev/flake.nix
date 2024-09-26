@@ -8,6 +8,8 @@
     home-manager.url = "github:nix-community/home-manager";
     profile-parts.url = "github:adamcstephens/profile-parts";
     disko.url = "github:nix-community/disko";
+    sops.url = "github:Mic92/sops-nix";
+
     # deploy-rs.url = "github:adamcstephens/profile-parts";
   };
 
@@ -44,6 +46,7 @@
         (with lynx.flakeModules; [
           deploy-rs
           lynx-docs
+          unit-test
         ]);
 
       lynx.docgen.repository.baseUri = "github.com/";

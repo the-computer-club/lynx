@@ -4,34 +4,43 @@ let
   network-options = import ./network-options.nix args;
   autoconfig-options = import ./autoconfig-options.nix args;
 
+  mkDefaultStr = description: mkOption {
+    inherit description;
+    type = types.nullOr types.str;
+    default = null;
+  };
+
   inherit (import ./lib.nix args)
     composeNetwork;
 in
 {
   options = {
-    # sops.enable = mkEnableOption ''
-    #   enable looking up secrets via `sops.secrets ? <lookup>`.
-    #   enabling this without sops will not cause errors, and instead skip the check
+    defaults = {
+      autoConfig = mkOption {
+        type = (types.submodule autoconfig-options);
+        default = {};
+      };
 
-    #   reads from `sops.secrets.<secretsLookup>` to store the privateKeyFile option in `networking.wireguard.interfaces.<network>.privateKeyFile`.
-    #   The option `secretsLookup` look is derived from either
-    #   - `<network>.self.secretsLookup`
-    #   - `<network>.secretsLookup`
+      nameAsFQDN = mkEnableOption "use hostname as fqdn";
+      secretsLookup = mkDefaultStr ''used by `config.[age|sops].secrets ? "''${secretsLookup}"`'';
+      privateKeyFile = mkDefaultStr "file path to the private key used for this host";
 
-    #   if the option `secretsLookup` has not been set, it will be defaulted to the network's interface name.
-    #   The network interface's default name is the value of wireguard.networks.<key> where key describes the current network,
-    #   and network interface name.
-    # '';
+      domainName = mkDefaultStr "asdasd";
 
-    # age.enable = mkEnableOption
-    # ''
-    #   reads from `age.secrets.<secretsLookup>` to store the privateKeyFile option in `networking.wireguard.interfaces.<network>.privateKeyFile`.
-    #   The option `secretsLookup` look is derived from `<network>.self.secretsLookup`
-    # '';
+      authority = {
+        rootCertificate = mkOption {
+          type = types.nullOr types.path;
+          description = ''
+            ACME root certificate.
+          '';
+          default = null;
+        };
 
-    defaults.autoConfig = mkOption {
-      type = (types.submodule autoconfig-options);
-      default = {};
+        subca = mkOption {
+          type = types.attrsOf (types.submodule ./subca-options.nix);
+          default = {};
+        };
+      };
     };
 
     networks = mkOption {
@@ -56,6 +65,5 @@ in
       type = types.unspecified;
       default = import ./lib.nix args;
     };
-
   };
 }

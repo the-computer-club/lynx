@@ -1,4 +1,4 @@
-args@{ options, config, lib, pkgs, ... }:
+args@{ config, lib, pkgs, ... }:
 with lib;
 let
   inherit (import ./lib.nix args)
@@ -52,7 +52,6 @@ in
       description = ''
         configures `wireguard.networks.<network>.self`
         from  `wireguard.networks.<network>.peers.by-name.<hostname>`
-
         This option is responsible for pairing this current configuration with the peer in the network.
         The hostname should be equal to an attribute key inside of `<network>.peers.by-name`
         '';
@@ -81,7 +80,11 @@ in
      inherit (builtins) filter any attrValues concatStringsSep;
      nets = attrValues networks;
      predicate =
-      (net: net.self.found && net.self.privateKeyFile == null);
+       (net:
+         net.self.found
+         && net.self.privateKeyFile == null
+         && net.self.privateKey == null
+       );
    in
   [{
     assertion = !(any predicate nets);
@@ -90,16 +93,19 @@ in
         failed to find some of your private key for wireguard.
 
         ${concatStringsSep "\n"
-          (lib.traceVal (map (x:
+          ((map (x:
+            let
+              y = lib.traceValSeqN 3 x;
+              safeFormat = x: if x == null then "null" else x;
+            in
             ''
-            Your host was determined to be: ${x.self.hostName}
-            - config.wireguard.networks.${x.interfaceName}.privateKeyFile => ${x.privateKeyFile}
-            - config.wireguard.networks.${x.interfaceName}.secretsLookup => ${x.secretsLookup}
+            Your host was determined to be: ${y.self.hostName or "null"}
+            - config.wireguard.networks.${y.interfaceName}.privateKeyFile => ${safeFormat y.privateKeyFile}
+            - config.wireguard.networks.${y.interfaceName}.secretsLookup => ${safeFormat y.secretsLookup}
+            - config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
            '')
-            (filter predicate nets)))
+            (lib.traceValSeqN 3 (filter predicate nets))))
          }
-
-
       '';
   }];
 
@@ -146,8 +152,8 @@ in
   config.networking.firewall.allowedUDPPorts =
     lib.concatLists
       (mapAttrsToList(net-name: network: lib.optionals
-        (network.self.listenPort != null && network.autoConfig.openFirewall)
-        [ network.self.listenPort ]
+        (network.listenPort != null && network.autoConfig.openFirewall)
+        [ network.listenPort ]
       ) config.wireguard.build.networks);
 
   # build the wireguard interfaces via
@@ -155,7 +161,6 @@ in
     mapAttrs (net-name: network:
       (mkIf (network.self.found && network.autoConfig."networking.wireguard".interface.enable) {
         inherit (network.self)
-          listenPort
           privateKey
           privateKeyFile;
 
@@ -200,7 +205,7 @@ in
                   ) ++
                   (lib.optionals
                     network.autoConfig."networking.hosts".FQDNs.enable
-                    ([peer.fqdn] ++ peer.extraFQDNs)
+                    (lib.optional (peer.fqdn != null) peer.fqdn)
                   );
               }) (peer.ipv4 ++ peer.ipv6)
             )) network.peers.by-name)

@@ -84,7 +84,7 @@ in
   sops.secrets.my-network.mode = "0400";
   networking.firewall.interfaces = {
     eno1.allowedUDPPorts = [
-      net.my-network.self.listenPort
+      net.my-network.listenPort
     ];
     my-network.allowedTCPPorts = [ 22 80 443 ];
   };

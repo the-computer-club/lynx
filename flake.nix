@@ -8,6 +8,8 @@
       flake-guard = ./flake-modules/flake-guard/flake-module.nix;
       domains = ./flake-modules/domains;
       profile-parts-homexts = ./flake-modules/profile-parts-homext.nix;
+
+      unit-test = ./flake-modules/unit-test;
     };
 
     nixosModules = {

@@ -3,6 +3,7 @@ with lib;
 let
 node-options = import ./node-options.nix args;
 autoconfig-options = import ./autoconfig-options.nix args;
+cfg = config.wireguard;
 in {
   options = {
     secretsLookup = mkOption {
@@ -20,10 +21,14 @@ in {
       '';
 
       type = types.nullOr types.str;
-      default = null;
+      default = cfg.defaults.secretsLookup;
     };
 
-    nameAsFQDN = mkEnableOption "use hostname as a fully qualified domain name. ignoring `domainName` ";
+    nameAsFQDN = mkOption {
+      description = "use hostname as a fully qualified domain name. ignoring `domainName` ";
+      type = types.bool;
+      default = cfg.defaults.nameAsFQDN;
+    };
 
     domainName = mkOption {
       description = ''
@@ -32,7 +37,7 @@ in {
       '';
 
       type = types.nullOr types.str;
-      default = null;
+      default = cfg.defaults.nameAsFQDN;
     };
 
     authority = {
@@ -41,37 +46,27 @@ in {
           ACME root certificate.
         '';
         type = types.nullOr types.path;
-        default = null;
+        default = cfg.defaults.authority.rootCertificate;
       };
 
       subca = mkOption {
-        default = {};
+        default = cfg.defaults.authority.subca;
         description = ''
         sub-ca information for clients.
         '';
 
-        type = types.attrsOf (types.submodule {
-          options.certificate = mkOption {
-            default = null;
-            type = types.nullOr types.path;
-          };
-
-          options.endpoint = mkOption {
-            default = null;
-            type = types.nullOr types.nonEmptyStr;
-          };
-        });
+        type = types.attrsOf (types.submodule ./subca-options.nix);
       };
 
       dns = mkOption {
         type = types.nullOr (types.listOf types.nonEmptyStr);
-        default = null;
+        default = cfg.defaults.authority.rootCertificate;
       };
     };
 
     privateKeyFile = mkOption {
       type = types.nullOr types.str;
-      default = null;
+      default = cfg.defaults.privateKeyFile;
     };
 
     interfaceName = mkOption {
@@ -87,7 +82,7 @@ in {
     listenPort = mkOption {
       description = '' default port for the network '';
       type = types.nullOr types.port;
-      default = 51820;
+      default = null;
     };
 
     _responsible = mkOption {
@@ -133,7 +128,7 @@ in {
 
     autoConfig = mkOption {
       type = (types.submodule autoconfig-options);
-      default = {};
+      default = cfg.defaults.autoConfig;
     };
 
     metadata = mkOption {

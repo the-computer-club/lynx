@@ -4,29 +4,8 @@ in {
   imports = [
     inputs.lynx.flakeModules.flake-guard
     ./network.nix
+    ./unit-tests.nix
   ];
-
-  flake.nixosConfigurations.flake-guard-eval-privateKeyFile = inputs.nixpkgs.lib.nixosSystem {
-    system = "x86_64-linux";
-    modules = [
-      inputs.lynx.nixosModules.flake-guard-host
-      { wireguard.networks.testnet.peers.by-name.nginx.privateKey = lib.mkForce null; }
-      { wireguard.hostname = "nginx";
-
-        wireguard.networks = rootConfig.wireguard.networks;
-        services.openssh.hostKeys = [
-          {
-            path = ./SNAKEOIL;
-            type = "ed25519";
-          }
-        ];
-        sops.defaultSopsFile = ./secrets.json;
-        sops.secrets."testnet" = {};
-      }
-    ];
-  };
-
-
 
   perSystem = args@{ config, self', inputs', pkgs, lib, system, ... }:
   {

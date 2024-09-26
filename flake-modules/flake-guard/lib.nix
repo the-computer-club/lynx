@@ -55,7 +55,6 @@ rec {
         { inherit ip cidr; data=peer; }
     ) peers;
 
-
   splitIp = ip:
     let
       array = lib.splitString "/" ip;
@@ -74,6 +73,8 @@ rec {
   composeNetwork =
     mapAttrs (net-name: network:
      let
+       inherit (config.wireguard) defaults;
+
        interfaceName =
          if network.interfaceName != null
          then network.interfaceName
@@ -132,12 +133,15 @@ rec {
                   {} (partition (p: elem group-name p.groups) (attrValues by-name)).right
               );
           in
-            {};
-            # per-groups;
+            per-groups;
+
       in
         # nameValuePair
         # interfaceName
-          (network // {
+
+        {inherit (defaults) autoConfig privateKeyFile secretsLookup domainName authority;}
+        //
+        (network // {
             inherit interfaceName;
             peers.by-group = by-group;
             peers.by-name = by-name;
