@@ -93,9 +93,8 @@ in
         failed to find some of your private key for wireguard.
 
         ${concatStringsSep "\n"
-          ((map (x:
+          (map (y:
             let
-              y = lib.traceValSeqN 3 x;
               safeFormat = x: if x == null then "null" else x;
             in
             ''
@@ -104,7 +103,7 @@ in
             - config.wireguard.networks.${y.interfaceName}.secretsLookup => ${safeFormat y.secretsLookup}
             - config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
            '')
-            (lib.traceValSeqN 3 (filter predicate nets))))
+            (filter predicate nets))
          }
       '';
   }];
