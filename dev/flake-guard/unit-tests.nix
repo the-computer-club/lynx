@@ -68,6 +68,5 @@ in
         deriveSecret failed us. something's gone wrong with it.
       '';
     }
-
   ];
 }

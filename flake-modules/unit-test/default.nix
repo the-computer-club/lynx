@@ -23,12 +23,22 @@ in
       type = types.listOf (types.submodule body);
       default = [];
     };
+
+    "throw" = mkOption {
+      type = types.unspecified;
+      default = [];
+    };
   };
 
   config.evalChecks.failed =
       builtins.filter
         (x: x.assertion == false)
         config.evalChecks.assertions;
+
+  config.evalChecks.throw =
+    if config.evalChecks.failed != [] then
+      throw (lib.concatStringsSep "\n" (map (x: x.message) config.evalChecks.failed))
+    else "OK";
 
   # config.perSystem = {pkgs, ...}:
   #   {
