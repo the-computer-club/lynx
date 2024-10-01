@@ -24,6 +24,6 @@ in
     default = {};
   };
 
-  config.wireguard.build.networks =
+  config.wireguard.build.networks = lib.mkIf config.wireguard.enable
     (composeNetwork config.wireguard.networks);
 }

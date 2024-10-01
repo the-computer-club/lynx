@@ -138,13 +138,14 @@ rec {
       in
         # nameValuePair
         # interfaceName
-
-        {inherit (defaults) autoConfig privateKeyFile secretsLookup domainName authority;}
-        //
-        (network // {
+        lib.optionalAttr network.enabled
+        (
+          {inherit (defaults) autoConfig privateKeyFile secretsLookup domainName authority;}
+          // (network // {
             inherit interfaceName;
             peers.by-group = by-group;
             peers.by-name = by-name;
           })
+        )
     );
 }

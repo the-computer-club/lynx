@@ -15,6 +15,8 @@ let
 in
 {
   options = {
+    enable = mkEnableOption "enable flake-guard";
+
     defaults = {
       autoConfig = mkOption {
         type = (types.submodule autoconfig-options);

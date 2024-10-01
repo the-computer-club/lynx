@@ -6,6 +6,11 @@ autoconfig-options = import ./autoconfig-options.nix args;
 cfg = config.wireguard;
 in {
   options = {
+    enabled = mkOption {
+      type = types.bool;
+      default = true;
+    };
+
     secretsLookup = mkOption {
       description = ''
         Used as a lookup key for either

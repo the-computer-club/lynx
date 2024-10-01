@@ -40,11 +40,8 @@ in
   imports = [
     (mkRenamedOptionModule
       [ "networking" "wireguard" "networks" ]
-      [ "wireguard" "networks" ])
-
-    (mkRenamedOptionModule
-      [ "flake-guard" "networks" ]
-      [ "wireguard" "networks" ])
+      [ "wireguard" "networks" ]
+    )
   ];
 
   options.wireguard = recursiveUpdate toplevel-options.options {
@@ -71,8 +68,42 @@ in
     };
   };
 
-  config.wireguard.build.composed =
+  config.wireguard.build.composed = mkIf config.wireguard.enable
     (composeNetwork config.wireguard.networks);
+
+  # build network with `self` selected
+  config.wireguard.build.networks =
+    (mapAttrs (net-name: network:
+      let
+        _responsible =
+          ((mapAttrs (k: x:
+            k == cfg.hostName
+            || x.hostName == cfg.hostName
+          ) network.peers.by-name));
+
+        instances = attrNames (filterAttrs (k: v: !v) _responsible);
+
+        self =
+          if ((length instances) == 1)
+          then peers.by-name."${head instances}"
+          else null;
+      in
+        network // {
+          inherit _responsible;
+          self =
+            (mkIf (self-name != null)
+              (peer-data //
+              ({
+                found = lib.mkForce true;
+                privateKeyFile =
+                  safeHead ((filter (x: x == null)
+                    (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
+                    ++ (deriveSecret network.secretsLookup)
+                    ++ (deriveSecret net-name)
+                  ));
+              }))
+          );
+        }) cfg.build.composed);
 
   config.assertions =
    let
@@ -101,52 +132,14 @@ in
             Your host was determined to be: ${y.self.hostName or "null"}
             - config.wireguard.networks.${y.interfaceName}.privateKeyFile => ${safeFormat y.privateKeyFile}
             - config.wireguard.networks.${y.interfaceName}.secretsLookup => ${safeFormat y.secretsLookup}
+              - [sops.secrets."${y.secretsLookup}".path => "${config.sops.secrets."${y.secretsLookup}".path}"]
+              - [age.secrets."${y.secretsLookup}".path => "${config.age.secrets."${y.secretsLookup}".path}"]
             - config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
            '')
             (filter predicate nets))
          }
       '';
   }];
-
-  # build network with `self` selected
-  config.wireguard.build.networks =
-    (mapAttrs (net-name: network:
-      let
-        _responsible =
-          ((mapAttrs (k: x:
-            k == cfg.hostName
-            || x.hostName == cfg.hostName
-          ) network.peers.by-name));
-
-        self-name =
-          let
-            names =
-              builtins.filter(p: p.val) (lib.mapAttrsToList (k: v: {key=k; val=v;}) _responsible);
-
-            name = (safeHead names);
-          in
-            if (name != null)
-            then name.key
-            else null;
-
-        peer-data = network.peers.by-name.${self-name};
-
-      in network // {
-        inherit _responsible;
-        self =
-          (mkIf (self-name != null)
-            (peer-data //
-            ({
-              found = lib.mkForce true;
-              privateKeyFile =
-                safeHead ((filter (x: x == null)
-                  (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
-                  ++ (deriveSecret network.secretsLookup)
-                  ++ (deriveSecret net-name)
-                ));
-            }))
-        );
-      }) cfg.build.composed);
 
   config.networking.firewall.allowedUDPPorts =
     lib.concatLists
