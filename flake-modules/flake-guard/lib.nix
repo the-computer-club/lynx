@@ -10,6 +10,8 @@ let
     concatLists
     recursiveUpdate
     optionals
+    optionalString
+    replaceStrings
   ;
 
   inherit (builtins)
@@ -69,6 +71,19 @@ rec {
         config.sops.secrets."${lookup}".path
       else null
     ) ["sops" "age"];
+
+  peerUnitName =
+    publicKey: replaceStrings
+      [ "/" "-"     " "     "+"     "="     ]
+      [ "-" "\\x2d" "\\x20" "\\x2b" "\\x3d" ]
+      publicKey;
+  ###
+  # nixos/modules/services/networking/wireguard.nix#L346
+  peerUnitServiceName = interfaceName: peerName: dynamicRefreshEnabled:
+    let
+      refreshSuffix = optionalString dynamicRefreshEnabled "-refresh";
+    in
+      "wireguard-${interfaceName}-peer-${peerName}${refreshSuffix}";
 
   composeNetwork =
     mapAttrs (net-name: network:

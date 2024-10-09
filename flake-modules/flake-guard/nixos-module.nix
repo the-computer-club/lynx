@@ -167,6 +167,8 @@ in
       })
     ) cfg.build.networks;
 
+  config.systemd.services."${(network: peer: peerUnitServiceName network.interfaceName (peerUnitName peer.publicKey)}"
+
   config.services.rosenpass.settings =
     mapAttrs(net-name: network:
       (mkIf cfg.autoConfig."rosenpass".enable {
