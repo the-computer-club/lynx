@@ -5,7 +5,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 let
-  cfg = config.boot.zfs;
+  cfg = config.lynx.boot.zfs;
   mkPasswordPromptStr = mkOrder 1502;
 in
 {
