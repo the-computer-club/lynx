@@ -153,7 +153,7 @@ rec {
       in
         # nameValuePair
         # interfaceName
-        lib.optionalAttr network.enabled
+        lib.optionalAttrs network.enabled
         (
           {inherit (defaults) autoConfig privateKeyFile secretsLookup domainName authority;}
           // (network // {
