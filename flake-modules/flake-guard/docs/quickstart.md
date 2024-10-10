@@ -96,7 +96,7 @@ someones wants to make wireguard effect `packages`.
 
 ## Generate wireguard keypair
 
-```
+```sh
 nix shell nixpkgs#wireguard-tools
 
 wg genkey | tee /tmp/wg-private-key | wg pubkey
@@ -118,11 +118,11 @@ included in: `lynx.nixosModules.flake-guard-host`.
 ### PrivateKeyFile
 generate a key pair, then copy the public key.
 
-```
+```sh
 wg genkey | tee /var/lib/wireguard/privatekey | wg pubkey
 ```
 
-```
+```nix
 wireguard.networks.your-network = {
   privateKeyFile = "/var/lib/wireguard/privateKeyFile";
   
@@ -175,15 +175,14 @@ wireguard.networks.your-network = {
 
 add the encrypted file by running and pasting in the private key.
 
-```
+```sh
 EDITOR=emacs agenix -e host1-your-network.age
 ```
 
 
-
 add the following configuration to your hosts. 
 Where each host appropriately knows its own secrets.
-```
+```nix
 # secrets.nix
 age.secrets."your-network".file = ./host1-your-network.age;
 ```
@@ -207,9 +206,11 @@ instead the nixos `configuration.nix` the name (`peers.by-name.<NAME>`) field ha
 - `networking.hostName`
 - `wireguard.hostName`
 
-```
+```nix
 wireguard.hostname = "your-host";
 ```
+
+### Configure outputs
 
 Each host has to know how to build wireguard configurations.
 
@@ -218,7 +219,7 @@ In this example, we'll be targeting `networking.wireguard` and `networking.hosts
 Currently we only support the two  `autoConfig` mentioned, 
 but you can implement your own with `config.wireguard.build.networks`
 
-```
+```nix
 wireguard.networks.your-network.autoConfig = {
   # Punch a port through the firewall
   openFirewall = true;
@@ -304,7 +305,7 @@ If `self` cannot be found, consider checking the possible locations.
 - `nix eval .#nixosConfigurations.<HOST>.config.wireguard.build.networks.<NETWORK>._responsible`
 
 Some more advanced configurations can be done when self is used.
-```
+```nix
 let 
   netcfg = config.wireguard.build.networks.your-network;
 in
@@ -318,7 +319,7 @@ applied aren't used until the next reboot. This feature is included for the use 
 where changes to `flake-guard` or underlying `autoConfig` targets are updated, 
 they sometimes cause tunnels to be unaccessible.
 
-```
+```nix
 wireguard.networks.your-network.restartIfChanged = false;
 wireguard.networks.your-network.peers.by-name.your-host.restartIfChanged = false;
 ```
