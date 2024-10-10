@@ -35,15 +35,22 @@ this allows you to define your wireguard network once, and use it across multipl
 
 ## [Flake-parts](https://flake.parts/)
 
+flake-guard options can be setup in either `flake-parts` module system, 
+and carried down as shown.
+
 ```nix
 {
   inputs.lynx.url = "github:the-computer-club/lynx";
   
-  outputs = inputs@{self, parts, lynx, nixpkgs, ...}:
+  outputs = inputs@{self, parts, lynx, nixpkgs, peers, ...}:
     parts.lib.mkFlake { inherit inputs; }
     ({ config, ... }: {
-      imports = [ lynx.flakeModules.flake-guard ];
-        
+      imports = [ 
+        lynx.flakeModules.flake-guard
+      ];
+      
+      wireguard.enable = true;
+  
       flake.nixosConfigurations.yourhostname = nixpkgs.lib.nixosSystem {
         modules = [
           ./configuration.nix
