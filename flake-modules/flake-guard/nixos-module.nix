@@ -33,7 +33,6 @@ let
 
   network-options = import ./network-options.nix args;
   toplevel-options = import ./toplevel.nix args;
-
   cfg = config.wireguard;
 in
 {
@@ -91,7 +90,7 @@ in
         network // {
           inherit _responsible;
           self =
-            (mkIf (self-name != null)
+            (mkIf (self != null)
               (peer-data //
               ({
                 found = lib.mkForce true;
@@ -172,7 +171,6 @@ in
   config.services.rosenpass.settings =
     mapAttrs(net-name: network:
       (mkIf cfg.autoConfig."rosenpass".enable {
-
         public_key = network.self.publicKey;
         secret_key = network.self.privateKeyFile;
         endpoint = network.self.selfEndpoint;
