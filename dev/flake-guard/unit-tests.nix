@@ -41,6 +41,7 @@ in
 
   evalChecks.assertions =
     let networks =  module.config.wireguard.build.networks;
+    in
   [
     { assertion =
         builtins.all
