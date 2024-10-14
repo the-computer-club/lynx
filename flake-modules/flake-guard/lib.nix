@@ -1,23 +1,34 @@
-{ config, lib, pkgs, ... }:
-
+{ config, lib, ... }:
 let
-inherit (lib)
-  mkOption
-  mkEnableOption
-  mkIf
-  mkMerge
-  types
-  mapAttrs
-  mapAttrs'
-  attrValues'
-  attrNames
-  partition
-  nameValuePair
-  mapAttrsToList
-  recursiveUpdate
+  inherit (lib)
+    mapAttrs'
+    nameValuePair
+    mapAttrs
+    mapAttrsToList
+    partition
+    genAttrs
+    concatLists
+    recursiveUpdate
+    optionals
+    optionalString
+    replaceStrings
+  ;
+
+  inherit (builtins)
+    splitString
+    head
+    elemAt
+    elem
+    foldl'
+    attrValues
   ;
 in
 rec {
+  safeHead = list:
+    if (builtins.length list) >= 1
+    then (builtins.head list)
+    else null;
+
   toPeer = p: {
     inherit (p)
       publicKey
@@ -26,121 +37,130 @@ rec {
     endpoint = p.selfEndpoint;
   };
 
-  # interlace =
-  #   s: a: b:
-  #   let
-  #     partition = lib.partition (x: x) s;
-  #   in
-  #     lib.fold' (s: x: s ++ [x]) s (lib.zip s a b);
+  toRosenPeer = p: {
+    device = p.interfaceName;
+    peer = p.publicKey;
+    endpoint = p.selfEndpoint;
+  };
 
-  # shape =
-  # {
+  rmParent = attr:
+    foldl' recursiveUpdate {}
+      ( mapAttrsToList (k: v: v) attr );
 
-  #   # all macines interlock with each other
-  #   #  *---*
-  #   #   \ /
-  #   #    *
-  #   #
-  #   # [wireguard.networks.*] :: -> flake-module
-  #   mesh = network:
-  #     {
-  #       wireguard
-  #         .build
-  #         .networks
-  #         .${network.network-name}
-  #         .peers
-  #         .by-name
-  #       =
-  #         builtins.genAttrs (x: {
-  #           peers = map toPeer (builtins.attrValues network.peers.by-name);
-  #         })
-  #         (attrNames network.peers.by-name);
-  #     };
+  toIpv4Range = peers:
+    map (peer:
+      let
+        list = (splitString "/" ip);
+        ip = head list;
+        cidr = elemAt list 2;
+      in
+        { inherit ip cidr; data=peer; }
+    ) peers;
 
-  #   # builtins.attrValues peers-by-name;
+  splitIp = ip:
+    let
+      array = lib.splitString "/" ip;
+      address = builtins.elemAt array 0;
+      mask = builtins.elemAt array 1;
+    in
+    { inherit address mask; };
 
-  #   # chain
-  #   # *-> *-> ...
-  #   #
-  #   # TODO:
-  #   #  interlace peer list into this where host is a peer who has an endpoint
-  #   #  home->host->peer->host->peer->...
-  #   #
-  #   # [wireguard.networks.*] :: -> flake-module
-  #   proxychain = network:
-  #     let
-  #       part = lib.partition (p: p.selfEndpoint != null) network.peers.by-name;
-  #       gateways = part.right;
-  #       clients = part.wrong;
+  deriveSecret = lookup:
+    map (backend:
+      if (config ? "${backend}" && config."${backend}".secrets ? "${lookup}") then
+        config.sops.secrets."${lookup}".path
+      else null
+    ) ["sops" "age"];
 
+  peerUnitName =
+    publicKey: replaceStrings
+      [ "/" "-"     " "     "+"     "="     ]
+      [ "-" "\\x2d" "\\x20" "\\x2b" "\\x3d" ]
+      publicKey;
+  ###
+  # nixos/modules/services/networking/wireguard.nix#L346
+  peerUnitServiceName = interfaceName: peerName: dynamicRefreshEnabled:
+    let
+      refreshSuffix = optionalString dynamicRefreshEnabled "-refresh";
+    in
+      "wireguard-${interfaceName}-peer-${peerName}${refreshSuffix}";
 
-  #       peers = attrValues'
-  #         (builtins.zipAttrsWith (k: v: { name=k; value=v; })
-  #           network.peers-by.name);
+  composeNetwork =
+    mapAttrs (net-name: network:
+     let
+       inherit (config.wireguard) defaults;
 
-  #       intersect-name  = attr: lib.intersect (map (p: p.name) (attrValues' peers)) (builtins.attrNames attr);
+       interfaceName =
+         if network.interfaceName != null
+         then network.interfaceName
+         else net-name;
 
-  #       clients-names = intersect-name clients;
-  #       gateways-names = intersect-name gateways;
+       by-name = mapAttrs (peer-name: peer:
+         let
+           mkNodeOpt = name:
+             if (peer.${name} != null)
+             then peer.${name}
+             else network.${name};
 
-  #       fin = { i=0; remaining = peers; modules = []; };
+           inheritedAttrs = l: foldl' recursiveUpdate {} (map(i: { ${i} = mkNodeOpt i; }) l);
+           inheritedData = inheritedAttrs [
+             "domainName"
+             "nameAsFQDN"
+           ];
 
-  #       modules = lib.foldl' (s: v:
-  #         let
-  #           prev-peer = builtins.head s.remaining;
+           hostName =
+             if peer.hostName == null
+             then peer-name
+             else peer.hostName;
+         in
+           (( inheritedData // peer) // {
+             inherit interfaceName hostName;
 
-  #           remaining =
-  #             builtins.tail s.remaining;
+             fqdn =
+               if peer.fqdn == null then
+                if (!peer.nameAsFQDN && peer.fqdn == null) then
+                  if ((mkNodeOpt "domainName") != null && hostName != null)
+                  then "${hostName}.${network.domainName}"
+                  else null
+                else hostName
+             else peer.fqdn;
 
-  #           next-peer = builtins.head remaining;
-  #         in
-  #       {
-  #         inherit remaining;
-  #         i = s.i + 1;
-  #         modules = s.modules ++ [
-  #           ({...}: {
-  #             wireguard
-  #               .build
-  #               .networks
-  #               .${network.network-name}
-  #               .peers
-  #               .by-name
-  #               .${prev-peer.name}
-  #               .peers = [ next-peer.value ];
-  #           })
-  #         ];
-  #       }) fin fin.remaining;
+           })
 
-  #     in
-  #       mkMerge modules;
+           // {
+             build = rec {
+               ipv4 = map splitIp peer.ipv4;
+               ipv6 = map splitIp peer.ipv6;
+               first.ipv4 = safeHead ipv4;
+               first.ipv6 = safeHead ipv6;
+             };
+           }
+       ) network.peers.by-name;
 
-  #   #    *
-  #   #   /|\
-  #   #  * * *
-  #   #
-  #   star = network:
-  #     let
-  #       part = lib.partition (p: p.selfEndpoint != null) network.peers.by-name;
-  #       gateways = part.right;
-  #       clients = part.wrong;
+        by-group =
+          let
+            # first create flat list of all groups
+            all-groups = (concatLists (mapAttrsToList(k: v: v.groups) by-name));
+            per-groups = genAttrs all-groups
+              (group-name:
+                foldl'
+                  (s: x: recursiveUpdate s { "${x.keyLookup}" = x;  })
+                  {} (partition (p: elem group-name p.groups) (attrValues by-name)).right
+              );
+          in
+            per-groups;
 
-  #     in
-  #       {
-  #         wireguard.build.networks.${network.network-name}.peers.by-name =
-  #           mapAttrs (k: x: {
-  #             peers = map toPeer
-  #               (if x.selfEndpoint
-  #                  then clients ++ gateways
-  #                  else gateways
-  #               );
-
-  #           }) network.peers.by-name;
-  #       };
-  #       # if hosting
-  #       #   then map toPeer clients ++ gateways
-  #       #   else map toPeer gateways;
-
-
-  #   nobody = _: {};
-  # };
+      in
+        # nameValuePair
+        # interfaceName
+        lib.optionalAttrs network.enabled
+        (
+          {inherit (defaults) autoConfig privateKeyFile secretsLookup domainName authority;}
+          // (network // {
+            inherit interfaceName;
+            peers.by-group = by-group;
+            peers.by-name = by-name;
+          })
+        )
+    );
 }

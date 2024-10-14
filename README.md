@@ -29,7 +29,7 @@ lynx aims to have similar goals to nixpkgs, providing documentation, testing, an
     {
       systems = ["x86_64-linux"];
       imports = with lynx.flakeModules; [
-        flake-guard  # define a wireguard network once, and use it everywhere.
+        wireguard  # define a wireguard network once, and use it everywhere.
         deploy-rs    # types for deploy-rs
         domains      # evaluate flake modules in their own namespace
         # "builtins" # include this if you're using `parts.lib.mkFlake` 
