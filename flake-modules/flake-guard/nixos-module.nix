@@ -29,6 +29,7 @@ let
     head
     filters
     foldl'
+    length
   ;
 
   network-options = import ./network-options.nix args;
@@ -75,24 +76,21 @@ in
     (mapAttrs (net-name: network:
       let
         _responsible =
-          ((mapAttrs (k: x:
-            k == cfg.hostName
-            || x.hostName == cfg.hostName
-          ) network.peers.by-name));
+          lib.pipe network.peers.by-name [
+            (mapAttrs (k: x: k == cfg.hostName || x.hostName == cfg.hostName))
+            (filterAttrs (k: v: v))
+            attrNames
+        ];
 
-        instances = attrNames (filterAttrs (k: v: !v) _responsible);
-
-        self =
-          if ((length instances) == 1)
-          then peers.by-name."${head instances}"
+        self' =
+          if ((length _responsible) == 1)
+          then network.peers.by-name."${head _responsible}"
           else null;
       in
         network // {
           inherit _responsible;
-          self =
-            (mkIf (self != null)
-              (peer-data //
-              ({
+          self = mkIf (self' != null)
+            (self' // {
                 found = lib.mkForce true;
                 privateKeyFile =
                   safeHead ((filter (x: x == null)
@@ -100,8 +98,7 @@ in
                     ++ (deriveSecret network.secretsLookup)
                     ++ (deriveSecret net-name)
                   ));
-              }))
-          );
+            });
         }) cfg.build.composed);
 
   config.assertions =

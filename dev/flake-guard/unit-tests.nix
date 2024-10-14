@@ -39,12 +39,14 @@ in
     ];
   };
 
-  evalChecks.assertions = [
+  evalChecks.assertions =
+    let networks =  module.config.wireguard.build.networks;
+  [
     { assertion =
         builtins.all
           (net: net.self.privateKeyFile != null || net.self.privateKey != null)
           (builtins.filter(net: net.self.found)
-            (builtins.attrValues module.config.wireguard.build.networks));
+            (builtins.attrValues networks));
 
       message = ''
         self was found, but the privateKeyFile was not.
@@ -52,7 +54,7 @@ in
     }
     { assertion =
           module.config.wireguard.defaults.autoConfig ==
-            module.config.wireguard.build.networks.global-test.autoConfig;
+            networks.global-test.autoConfig;
 
       message = ''
         defaults did not get carried down
@@ -65,6 +67,14 @@ in
 
       message = ''
         deriveSecret failed us. something's gone wrong with it.
+      '';
+    }
+    { assertion = builtins.elem networks.testnet._responsible "nginx"
+          && networks.testnet.self.found == false;
+
+      message = ''
+        `network._responsible` contains the correct information,
+        but `network.self.found` was not triggered
       '';
     }
   ];

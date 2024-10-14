@@ -91,7 +91,7 @@ in {
     };
 
     _responsible = mkOption {
-      type = types.attrsOf types.bool;
+      type = types.listOf types.str;
       default = {};
     };
 

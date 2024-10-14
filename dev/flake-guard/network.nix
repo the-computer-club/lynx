@@ -1,10 +1,7 @@
 {
-  wireguard.networks.testnet = {
-    listenPort = 51820;
-    domainName = "vpn";
+  wireguard.enable = true;
 
-    metadata.acmeServer = "https://acme:8443/acme/testnet/directory";
-
+  wireguard.defaults = {
     autoConfig = {
       "networking.wireguard" = {
         interface.enable = true;
@@ -16,7 +13,13 @@
         FQDNs.enable = true;
       };
     };
+  };
 
+  wireguard.networks.testnet = {
+    listenPort = 51820;
+    domainName = "vpn";
+
+    metadata.acmeServer = "https://acme:8443/acme/testnet/directory";
     peers.by-name = {
       acme = {
         ipv4 = ["172.16.169.1/32"];
