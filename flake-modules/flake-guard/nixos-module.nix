@@ -8,8 +8,10 @@ let
     rmParent
     composeNetwork
     safeHead
-    deriveSecret
+    deriveSecretWith
   ;
+
+  deriveSecret = deriveSecretWith config;
 
   inherit (lib)
     mkOption

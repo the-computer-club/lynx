@@ -65,7 +65,7 @@ rec {
     in
     { inherit address mask; };
 
-  deriveSecret = lookup:
+  deriveSecretWith = config: lookup:
     map (backend:
       if (config ? "${backend}" && config."${backend}".secrets ? "${lookup}") then
         config.sops.secrets."${lookup}".path

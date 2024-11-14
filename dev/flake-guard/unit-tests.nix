@@ -62,12 +62,12 @@ in
       '';
     }
     { assertion =
-        let inherit (module.config.wireguard.lib) deriveSecret;
+        let inherit (module.config.wireguard.lib) deriveSecretWith;
         in
-          (deriveSecret "testnet") != [];
+          (deriveSecretWith module.config "testnet") != [];
 
       message = ''
-        deriveSecret failed us. something's gone wrong with it.
+        deriveSecretWith failed us. something's gone wrong with it.
       '';
     }
     { assertion = builtins.elem networks.testnet._responsible "nginx"
