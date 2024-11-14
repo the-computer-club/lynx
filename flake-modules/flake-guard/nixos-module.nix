@@ -30,6 +30,7 @@ let
     filters
     foldl'
     length
+    split
   ;
 
   network-options = import ./network-options.nix args;
@@ -76,11 +77,11 @@ in
     (mapAttrs (net-name: network:
       let
         _responsible =
-          lib.pipe network.peers.by-name [
+          pipe network.peers.by-name [
             (mapAttrs (k: x: k == cfg.hostName || x.hostName == cfg.hostName))
             (filterAttrs (k: v: v))
             attrNames
-        ];
+          ];
 
         self' =
           if ((length _responsible) == 1)
@@ -91,10 +92,10 @@ in
           inherit _responsible;
           self = mkIf (self' != null)
             (self' // {
-                found = lib.mkForce true;
+                found = mkForce true;
                 privateKeyFile =
                   safeHead ((filter (x: x == null)
-                    (lib.optional (network.privateKeyFile != null) network.privateKeyFile)
+                    (optional (network.privateKeyFile != null) network.privateKeyFile)
                     ++ (deriveSecret network.secretsLookup)
                     ++ (deriveSecret net-name)
                   ));
@@ -138,8 +139,8 @@ in
   }];
 
   config.networking.firewall.allowedUDPPorts =
-    lib.concatLists
-      (mapAttrsToList(net-name: network: lib.optionals
+    concatLists
+      (mapAttrsToList(net-name: network: optionals
         (network.listenPort != null && network.autoConfig.openFirewall)
         [ network.listenPort ]
       ) config.wireguard.build.networks);
@@ -159,7 +160,7 @@ in
 
         peers = lib.optionals
           network.autoConfig."networking.wireguard".peers.mesh.enable
-          (lib.mapAttrsToList (k: v: toPeer v) network.peers.by-name);
+          (mapAttrsToList (k: v: toPeer v) network.peers.by-name);
       })
     ) cfg.build.networks;
 
@@ -174,7 +175,7 @@ in
 
         settings.peers = lib.optionals
           network.autoConfig."rosenpass.peers".peers.mesh.enable
-          (lib.mapAttrsToList (k: v: toRosenPeer v) network.peers.by-name);
+          (mapAttrsToList (k: v: toRosenPeer v) network.peers.by-name);
       })
     ) config.wireguard.build.networks;
 
@@ -183,15 +184,15 @@ in
     rmParent (mapAttrs (network-name: network:
       (mkIf
         network.autoConfig."networking.hosts".enable
-        (builtins.foldl' lib.recursiveUpdate {}
-          (lib.mapAttrsToList (k: peer: builtins.foldl' lib.recursiveUpdate {}
+        (foldl' recursiveUpdate {}
+          (mapAttrsToList (k: peer: foldl' recursiveUpdate {}
             (map (real-ip:
               let
-                ip = builtins.head (builtins.split "/" real-ip);
+                ip = head (split "/" real-ip);
               in
-              lib.optionalAttrs (!peer.ignoreHostname) {
+              optionalAttrs (!peer.ignoreHostname) {
                 "${ip}" =
-                  (lib.optionals
+                  (optionals
                     network.autoConfig."networking.hosts".names.enable
                     peer.extraHostNames
                   )

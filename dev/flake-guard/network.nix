@@ -3,6 +3,8 @@
 
   wireguard.defaults = {
     autoConfig = {
+      openFirewall = true;
+
       "networking.wireguard" = {
         interface.enable = true;
         peers.mesh.enable = true;

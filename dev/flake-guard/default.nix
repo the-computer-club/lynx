@@ -31,14 +31,16 @@ in {
 
         common = {config, ...}:
         {
-          imports = [inputs.lynx.nixosModules.flake-guard-host];
+          imports = [
+            inputs.lynx.nixosModules.flake-guard-host
+            { wireguard.networks.testnet.autoConfig.openFirewall = true; }
+          ];
+          wireguard.enable = true;
           wireguard.defaults.autoConfig.openFirewall = true;
           wireguard.networks = rootConfig.wireguard.networks;
 
           security.pki.certificateFiles = [ "${test-certificates}/root_ca.crt" ];
-          networking.firewall.allowedUDPPorts = [
-            51820
-          ];
+          networking.firewall.allowedTCPPorts = [ 443 ];
         };
 
         open-server.networking.firewall.allowedTCPPorts = [ 443 ];
@@ -49,6 +51,7 @@ in {
           acme.imports = [
             common
             ./acme-server.nix
+
             { services.step-ca = {
                 enable = true;
                 intermediatePasswordFile = "${test-certificates}/intermediate-password-file";
