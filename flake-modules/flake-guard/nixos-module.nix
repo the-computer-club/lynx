@@ -80,8 +80,7 @@ in
       let
         _responsible =
           pipe network.peers.by-name [
-            (mapAttrs (k: x: k == cfg.hostName || x.hostName == cfg.hostName))
-            (filterAttrs (k: v: v))
+            (filterAttrs  (k: x: k == cfg.hostName || x.hostName == cfg.hostName))
             attrNames
           ];
 

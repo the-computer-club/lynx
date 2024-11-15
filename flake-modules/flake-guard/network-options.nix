@@ -92,7 +92,7 @@ in {
 
     _responsible = mkOption {
       type = types.listOf types.str;
-      default = {};
+      default = [];
     };
 
     self = mkOption {
