@@ -97,7 +97,7 @@ in
                 privateKeyFile =
                   safeHead ((filter (x: x == null)
                     (optional (network.privateKeyFile != null) network.privateKeyFile)
-                    ++ (deriveSecret network.secretsLookup)
+                    ++ optional (network.secretsLookup != null) (deriveSecret network.secretsLookup)
                     ++ (deriveSecret net-name)
                   ));
             });
