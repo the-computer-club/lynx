@@ -69,7 +69,8 @@ rec {
     map (backend:
       if (config ? "${backend}" && config."${backend}".secrets ? "${lookup}") then
         config.sops.secrets."${lookup}".path
-      else null
+      else
+        throw "couldn't find secret ${lookup}"
     ) ["sops" "age"];
 
   peerUnitName =
@@ -77,6 +78,7 @@ rec {
       [ "/" "-"     " "     "+"     "="     ]
       [ "-" "\\x2d" "\\x20" "\\x2b" "\\x3d" ]
       publicKey;
+  
   ###
   # nixos/modules/services/networking/wireguard.nix#L346
   peerUnitServiceName = interfaceName: peerName: dynamicRefreshEnabled:
