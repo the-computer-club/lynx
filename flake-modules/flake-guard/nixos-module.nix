@@ -95,7 +95,7 @@ in
             (self' // {
                 found = mkForce true;
                 privateKeyFile =
-                  safeHead ((filter (x: x != null)
+                  safeHead ((filter (x: x == null)
                     (optional (network.privateKeyFile != null) network.privateKeyFile)
                     ++ (optionals (network.secretsLookup != null) (deriveSecret network.secretsLookup))
                     ++ (deriveSecret net-name)
