@@ -95,7 +95,7 @@ in
             (self' // {
                 found = mkForce true;
                 privateKeyFile =
-                  safeHead ((filter (x: x == null)
+                  safeHead ((filter (x: x != null)
                     (optional (network.privateKeyFile != null) network.privateKeyFile)
                     ++ (optionals (network.secretsLookup != null) (deriveSecret network.secretsLookup))
                     ++ (deriveSecret net-name)
@@ -130,8 +130,12 @@ in
             Your host was determined to be: ${y.self.hostName or "null"}
             - config.wireguard.networks.${y.interfaceName}.privateKeyFile => ${safeFormat y.privateKeyFile}
             - config.wireguard.networks.${y.interfaceName}.secretsLookup => ${safeFormat y.secretsLookup}
-              - [sops.secrets."${y.secretsLookup}".path => "${config.sops.secrets."${y.secretsLookup}".path}"]
-              - [age.secrets."${y.secretsLookup}".path => "${config.age.secrets."${y.secretsLookup}".path}"]
+              ${lib.optionalString (y.secretsLookup != null)
+              ''
+              ${lib.optionalString config?sops ''- [sops.secrets."${y.secretsLookup or "null"}".path => "${config.sops.secrets."${y.secretsLookup or "null"}".path}"]''}
+              ${lib.optionalString config?age ''- [age.secrets."${y.secretsLookup or "null"}".path => "${config.age.secrets."${y.secretsLookup or "null"}".path}"]''}
+              ''
+              }
             - config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
            '')
             (filter predicate nets))
