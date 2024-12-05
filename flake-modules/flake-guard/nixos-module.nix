@@ -126,17 +126,17 @@ in
             let
               safeFormat = x: if x == null then "null" else x;
             in
+              # ${lib.optionalString config?sops ''- [sops.secrets."${y.secretsLookup or "null"}".path => "${config.sops.secrets."${y.secretsLookup or "null"}".path}"]''}
+              # ${lib.optionalString config?age ''- [age.secrets."${y.secretsLookup or "null"}".path => "${config.age.secrets."${y.secretsLookup or "null"}".path}"]''}
+              # ''
+              #lib.optionalString (y.secretsLookup != null)
+              # 
+              #}
+              #- config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
             ''
             Your host was determined to be: ${y.self.hostName or "null"}
             - config.wireguard.networks.${y.interfaceName}.privateKeyFile => ${safeFormat y.privateKeyFile}
             - config.wireguard.networks.${y.interfaceName}.secretsLookup => ${safeFormat y.secretsLookup}
-              ${lib.optionalString (y.secretsLookup != null)
-              ''
-              ${lib.optionalString config?sops ''- [sops.secrets."${y.secretsLookup or "null"}".path => "${config.sops.secrets."${y.secretsLookup or "null"}".path}"]''}
-              ${lib.optionalString config?age ''- [age.secrets."${y.secretsLookup or "null"}".path => "${config.age.secrets."${y.secretsLookup or "null"}".path}"]''}
-              ''
-              }
-            - config.wireguard.networks.${y.interfaceName}.privateKey => ${safeFormat y.self.privateKey}
            '')
             (filter predicate nets))
          }
