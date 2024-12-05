@@ -70,7 +70,7 @@ rec {
       if (config ? "${backend}" && config."${backend}".secrets ? "${lookup}") then
         config.sops.secrets."${lookup}".path
       else
-        throw "couldn't find secret ${lookup}"
+        null
     ) ["sops" "age"];
 
   peerUnitName =
