@@ -16,3 +16,16 @@ imports = [
   inputs.network-config.nixosModules.network-module
 ];
 ```
+
+
+## with peers.by-name
+
+```
+imports = [
+  inputs.lynx.modules.nixos.wg-name
+];
+
+environment.systemPackages = [
+  inputs.lynx.packages.${pkgs.system}.wireguard-tools
+]
+```
