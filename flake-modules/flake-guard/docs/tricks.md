@@ -58,3 +58,10 @@ peer: <peers.by-name.$0> (<pubkey>)
   ...
 
 ```
+
+try it before you buy it
+```sh
+# file.json
+# { "<publicKey>": { "name": $name } }
+WG_NAME="/path/to/file.json" sudo -E nix run github:the-computer-club/lynx/flake-guard-v2#wireguard-tools -- show
+```
