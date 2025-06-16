@@ -24,8 +24,12 @@ let
   ;
 in
 rec {
+  /* builtins.head
+    except a null return instead
+    of evaluation error
+  */
   safeHead = list:
-    if (builtins.length list) >= 1
+    if (builtins.length list) > 0
     then (builtins.head list)
     else null;
 
@@ -43,6 +47,18 @@ rec {
     endpoint = p.selfEndpoint;
   };
 
+  gateway = peer: network: peer // {
+    ipv4 = network;
+  };
+
+  proxy = peer: proxy-peer:
+    peer // { ipv4 = (splitIp proxy-peer.endpoint).ip; };
+
+  /*
+    remove the top layer attributes,
+    and unify lower attributes recursively
+    { A.B = 1; A.C = 2; } => { B = 1; C = 2; }
+  */
   rmParent = attr:
     foldl' recursiveUpdate {}
       ( mapAttrsToList (k: v: v) attr );

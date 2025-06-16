@@ -184,6 +184,21 @@ in
       })
     ) config.wireguard.build.networks;
 
+
+  config.systemd.services =
+    with lib; pipe config.wireguard.build.networks [
+      (mapAttrsToList (name: network: {interfaceName = name; } // network)) # [ network ... ]
+      (filter(x: x.enabled))
+      (map (network:
+        mapAttrsToList(name: p: { inherit name; interfaceName = network.interfaceName;} // p)
+          network.peers.by-name
+      ))
+      lib.flatten # [ peer ... ]
+      (filter(x: !x.restartIfChanged))
+      (filter(x: builtins.elem config.wireguard.networks.${x.interfaceName}.peers (lib.toPeer x) ))
+      (map (x: { "${peerUnitServiceName x.interfaceName x.name false}".restartIfChanged = false; } ))
+    ];
+
   # build the hostnames via
   config.networking.hosts =
     rmParent (mapAttrs (network-name: network:

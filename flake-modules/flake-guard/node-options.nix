@@ -82,6 +82,16 @@ in
       default = null;
     };
 
+    restartIfChanged = mkOption {
+      description = "During upgrades, tunnels wont be restarted until reboot.";
+      default = true;
+      type = types.bool;
+    };
+
+    /*
+      TODO: carry down dynamicRefresh, presharedKeys
+    */
+
     build =
       let
         mod.options = {
