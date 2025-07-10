@@ -47,12 +47,20 @@ rec {
     endpoint = p.selfEndpoint;
   };
 
+  toNetworkdPeer = p: {
+    AllowedIPs = p.ipv4 ++ p.ipv6;
+    PublicKey = p.publicKey;
+    Endpoint = p.selfEndpoint;
+  };
+
   gateway = peer: network: peer // {
     ipv4 = network;
   };
 
   proxy = peer: proxy-peer:
-    peer // { ipv4 = (splitIp proxy-peer.endpoint).ip; };
+    peer // {
+      ipv4 = (splitIp proxy-peer.selfEndpoint).ip;
+    };
 
   /*
     remove the top layer attributes,

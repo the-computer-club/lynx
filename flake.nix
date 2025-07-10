@@ -35,6 +35,8 @@
         packages.wireguard-tools = pkgs.callPackage ./pkgs/wg-name/wireguard-tools.nix {
           wg-name = pkgs.python3Packages.callPackage ./pkgs/wg-name/wg-name.nix {};
         };
+
+        packages.wireguard-registrar-api = pkgs.python3Packages.callPackage ./pkgs/wg-registrar {};
       };
 
       flake.lib = ./lib.nix;
