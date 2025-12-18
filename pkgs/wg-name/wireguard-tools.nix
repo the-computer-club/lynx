@@ -1,6 +1,6 @@
 { bash, wg-name, wireguard-tools }:
 wireguard-tools.overrideAttrs (p: {
-  pname = "${p.pname}-names";
+  pname = "${p.pname}-names-wrapper";
   buildInputs = p.buildInputs ++ [ wg-name ];
   postFixup =
     ''
