@@ -153,21 +153,16 @@ in
   # build the wireguard interfaces via
   config.networking.wireguard.interfaces =
     mapAttrs (net-name: network:
-      (mkIf (network.self.found && network.autoConfig."networking.wireguard".interface.enable) {
-        inherit (network)
-          listenPort;
-
-        inherit (network.self)
-          privateKey
-          privateKeyFile;
-
-        ips = with network.self; ipv4 ++ ipv6;
+      (mkIf network.enabled) {
+        listenPort = with network.self; mkIf found listenPort;
+        ips = with network.self; mkIf found (ipv4 ++ ipv6);
+        privateKey = with network.self; mkIf found privateKey;
+        privateKeyFile = with network.self; mkIf found privateKeyFile;
 
         peers = lib.optionals
           network.autoConfig."networking.wireguard".peers.mesh.enable
           (mapAttrsToList (k: v: toPeer v) network.peers.by-name);
-      })
-    ) cfg.build.networks;
+      }) cfg.build.networks;
 
   #config.systemd.services."${(network: peer: peerUnitServiceName network.interfaceName (peerUnitName peer.publicKey)}"
 
